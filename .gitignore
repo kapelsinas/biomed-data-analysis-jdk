@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # R project from Rstudio
 *.Rproj
+
+# Ignoring duplicate folder that creates in root
+/Task_2_JDK_files

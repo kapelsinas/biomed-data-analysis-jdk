@@ -1,0 +1,13 @@
+name: "biomed-data-analysis"
+output_dir: "docs"
+navbar:
+  title: "Biomedical data analysis tasks"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Task 2"
+      href: Task_2_JDK.html
+output:
+  html_document:
+    theme: cosmo
+
