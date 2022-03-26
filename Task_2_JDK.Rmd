@@ -12,6 +12,13 @@ list.of.packages <- c("randomcoloR", "ggplot2", "RcmdrMisc", "dplyr", "huxtable"
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("minfi")
+
+
+
 # Loading used libraries:
 library(randomcoloR)
 library(ggplot2)
@@ -19,28 +26,24 @@ library(RcmdrMisc)
 library(dplyr)
 library(huxtable)
 library(gridExtra)
+library(minfi)
 
 # Importing data:
 typing new line
 
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+``` {r}
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+data <- read.csv('fixed_data.csv')
 
-```{r cars}
-summary(cars)
+RGset <- read.metharray.exp(file.path(data, "5723646052"))
+
+
+
+
+
+
+
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
