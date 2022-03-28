@@ -37,12 +37,22 @@ library(IlluminaHumanMethylationEPICmanifest)
 ``` {r}
 
 if(require(minfiData)) {
-RGSet <- read.metharray.exp(base = "IDATS" )
-saveRDS(RGset, "output.rds")
+  
+baseDir <-"/home/enjoy/Documents/GitHub/biomed-data-analysis-jdk/IDATS"
+
+targets=read.metharray.sheet(baseDir)
+
+print (targets$Basename)
+
+RGSet <- read.metharray(base = "IDATS", targets = targets$Basename,verbose=TRUE)
+
 }
 
 
+
 ??read.metharray
+
+
 
 
 

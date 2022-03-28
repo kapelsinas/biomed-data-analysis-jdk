@@ -45,4 +45,4 @@ vignettes/*.pdf
 /Task_2_JDK_files
 
 #Ignore dat files
-*.idat.gz
+*.idat
