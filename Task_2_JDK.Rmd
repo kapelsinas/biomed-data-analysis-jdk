@@ -40,5 +40,6 @@ if(require(minfiData)) {
   saveRDS(RGSet, "output.rds")
 }
 
+RGSet <- readRDS("output.rds")
 
 ```
