@@ -43,3 +43,6 @@ vignettes/*.pdf
 
 # Ignoring duplicate folder that creates in root
 /Task_2_JDK_files
+*.rds
+detectionP.csv
+*.idat
