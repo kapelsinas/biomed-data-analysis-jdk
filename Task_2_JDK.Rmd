@@ -4,10 +4,32 @@ author: "Jaroslav Rutkovskij, Danielė Stasiūnaitė, Karolis Augustauskas (JDK)
 date: "3/18/2022"
 output: pdf_document
 ---
-```{r}
+```{r Library loading}
+library(minfi)
+library(IlluminaHumanMethylationEPICmanifest)
+library(MASS)
+```
+
+```{r Preparations_Task_1, message=FALSE, warning=FALSE, include=FALSE}
+# Importing data:
+data <- read.csv("data.csv")
+# Changing column letters into lower case:
+names(data) <- tolower(names(data))
+write.csv(data, "fixed_data.csv")
+```
+
+```{r Task_2, message=FALSE, warning=FALSE, include=FALSE}
 if(require(minfiData)) {
   RGSet <- read.metharray.exp(base = "IDATS")
   saveRDS(RGSet, "output.rds")
 }
 RGSet <- readRDS("output.rds")
+detP <- detectionP(RGSet)
+write.matrix(detP, file="detectionP.csv")
+# failed <- detP>0.01
+# pain_types
+# colMeans(failed) # Fraction of failed positions per sample
+# ncol(detP) # myData[,-1]
+# DF2 <- data.frame(detP)
+# detP[,-1]
 ```
