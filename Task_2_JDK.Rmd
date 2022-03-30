@@ -8,28 +8,64 @@ output: pdf_document
 library(minfi)
 library(IlluminaHumanMethylationEPICmanifest)
 library(MASS)
+library(RColorBrewer)
+library(ggplot2)
 ```
 
 ```{r Preparations_Task_1, message=FALSE, warning=FALSE, include=FALSE}
 # Importing data:
-data <- read.csv("data.csv")
-# Changing column letters into lower case:
-names(data) <- tolower(names(data))
-write.csv(data, "fixed_data.csv")
+if (file.exists("data.csv") &&
+    !file.exists("fixed_data.csv")) {
+  data <- read.csv("data.csv")
+  # Changing column letters into lower case:
+  names(data) <- tolower(names(data))
+  write.csv(data, "fixed_data.csv")
+} else {
+  data <- read.csv("fixed_data.csv")
+}
 ```
 
 ```{r Task_2, message=FALSE, warning=FALSE, include=FALSE}
-if(require(minfiData)) {
+if (require(minfiData) &&
+    !file.exists("output.rds")) {
   RGSet <- read.metharray.exp(base = "IDATS")
   saveRDS(RGSet, "output.rds")
+} else {
+  RGSet <- readRDS("output.rds")
 }
-RGSet <- readRDS("output.rds")
-detP <- detectionP(RGSet)
-write.matrix(detP, file="detectionP.csv")
-# failed <- detP>0.01
+if (!is.null(RGSet) && !file.exists("detectionP.csv")) {
+  detP <- detectionP(RGSet)
+  write.matrix(detP, file = "detectionP.csv")
+} else {
+  detP <- as.matrix(read.table("detectionP.csv"))
+}
+head(detP)
+
 # pain_types
-# colMeans(failed) # Fraction of failed positions per sample
-# ncol(detP) # myData[,-1]
-# DF2 <- data.frame(detP)
-# detP[,-1]
+# remove poor quality samples
+keep <- colMeans(detP) < 0.1
+RGSet <- RGSet[,keep]
+
+# remove poor quality samples from targets data
+data <- data[keep,]
+data[,1:5]
+
+# remove poor quality samples from detection p-value table
+detP <- detP[,keep]
+
+# normalize the data; this results in a GenomicRatioSet object
+mSetSq <- preprocessSWAN(RGSet)
+
+# create a MethylSet object from the raw data for plotting
+mSetRaw <- preprocessRaw(RGSet)
+
+# visualise what the data looks like before and after normalisation
+par(mfrow=c(1,2), xpd=TRUE)
+densityPlot(RGSet, sampGroups=data$id,main="Raw", legend=FALSE)
+coord <- par("usr")
+legend(x = coord[2] * 1.05, y = coord[4], legend = levels(factor(data$id)), text.col=brewer.pal(8,"Dark2"), cex=0.5, pch=1, pt.cex = 0.5, inset=c(1,0))
+densityPlot(getBeta(mSetSq), sampGroups=data$id,
+            main="Normalized", legend=FALSE)
+legend("right", legend = levels(factor(data$id)), text.col=brewer.pal(8,"Dark2"), cex=0.5, pch=1, pt.cex = 0.5, inset=c(-0.2,0))
+
 ```
