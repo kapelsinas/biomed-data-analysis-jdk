@@ -4,32 +4,118 @@ author: "Jaroslav Rutkovskij, Danielė Stasiūnaitė, Karolis Augustauskas (JDK)
 date: "3/18/2022"
 output: pdf_document
 ---
-```{r Library loading}
+```{r Preparations, message=FALSE, warning=FALSE, include=FALSE}
+options(scipen = 1, digits = 3)
+#Installing missing packages:
+if(length(new.packages)) install.packages(new.packages)
+install.packages("Rtools")
+# Loading used libraries:
 library(minfi)
 library(IlluminaHumanMethylationEPICmanifest)
-library(MASS)
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")
 ```
 
-```{r Preparations_Task_1, message=FALSE, warning=FALSE, include=FALSE}
-# Importing data:
-data <- read.csv("data.csv")
-# Changing column letters into lower case:
-names(data) <- tolower(names(data))
-write.csv(data, "fixed_data.csv")
+```{r Preparations_Task, message=FALSE, warning=FALSE, include=FALSE}
+# To load the data
+# load("objects.Rdata")
 ```
 
-```{r Task_2, message=FALSE, warning=FALSE, include=FALSE}
-if(require(minfiData)) {
-  RGSet <- read.metharray.exp(base = "IDATS")
-  saveRDS(RGSet, "output.rds")
+```{r Preparations_Task_QC, message=FALSE, warning=FALSE, include=FALSE}
+if (!file.exists("objects.Rdata")) {
+  ################################################################################################
+  # 1.  Pasiruoskite sau paskirtus sample-key failus (apvalydami reiksmes, panasiai kaip aptareme paskaitu metu)
+  #     - sample-key nuskaitymui R galite naudoti read.csv() funkcija.
+  # Importing data:
+  ################################################################################################
+  if (file.exists("data.csv")) {
+    data <- read.csv("data.csv")
+    # Changing column letters into lower case:
+    names(data) <- tolower(names(data))
+  }
+  ################################################################################################
+  # 2.  Nuskaitykite parsisiustus idat failus i "RGChannelSet" tipo objekta
+  #     - tam naudokite `read.metharray.exp()` funkcija is R minfi bibliotekos
+  #     - si funkcija kaip argumenta naudoja "sample-key" lentele, kurioje stulpelis
+  #     Basename turi rodyti i failo vieta jusu kompiuteryje (galite paskaityti sios funkcijos help()).
+  #     - nuskaicius duomenis gauta objekta issaugokite su saveRDS()
+  #     - veliau ji pasikrauti i atminti galesite su readRDS() funkcija
+  ################################################################################################
+  rgSet <- read.metharray.exp(base = "IDATS")
+  ################################################################################################
+  # 3.  Gaukite "detection p-value" kiekvienam DNR modifikacijos iverciui
+  #     - naudokite funkcija `detectionP()` is minfi
+  #     - si funkcija grazins iverciu matrica (vienas ivertis vienai modifikacijos reiksmei) parodanti ar
+  #     matuojamas intensyvumas skiriasi nuo background
+  ################################################################################################
+  if (!is.null(rgSet)) {
+    detP <- detectionP(rgSet)
+    #     - visas vertes kuriu p-verte didesne uz 0.01 laikykite "blogomis"
+    badPValues <- colMeans(detP) > 0.01
+    keep <- colMeans(detP) < 0.01
+    
+    #     - is RGChannelSet objekto ismeskite visus meginius (stulpelius) kurie turi daugiau nei 1% "blogu" detection p reiksmiu.
+    #     - PAGALBA: is RGChannelSet objekto reiksmes ismesti galima taip, kaip ir is matricos: `myData[,-1]` - ismestu pirma megini (stulpeli)
+    rgSet <- rgSet[, keep]
+    data <- data[keep,]
+    detP <- detP[, keep]
+  }
+  
 }
-RGSet <- readRDS("output.rds")
-detP <- detectionP(RGSet)
-write.matrix(detP, file="detectionP.csv")
-# failed <- detP>0.01
-# pain_types
-# colMeans(failed) # Fraction of failed positions per sample
-# ncol(detP) # myData[,-1]
-# DF2 <- data.frame(detP)
-# detP[,-1]
+```
+
+```{r Preparations_Task_Normalization, message=FALSE, warning=FALSE, include=FALSE}
+####################################################################################################
+# 4.  Normalizuokite savo duomenis
+#     - naudokite viena is siu funkciju: preprocessSWAN(), preprocessFunnorm() or preproccessIllumina() is "minfi" bibliotekos.
+#     - galite pasirinkti laisvai, apie tai kuo skiriasi sie normalizavimo budai galite pasiskaityti siu funkciju help() dokumentacijoje.
+####################################################################################################
+if (is.null(mSetSq)) {
+  mSetSq <- preprocessFunnorm(rgSet) # It was used in the research
+}
+if (is.null(mSetSq)) {
+  mSetRaw <- preprocessRaw(rgSet)
+}
+####################################################################################################
+# 5.  Ismeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogu" detection p reiksmiu
+#     - detection p-reikmes paskaiciuojamos pries normalizacija, taigi naudokite pries tai paskaiciuota p-reiksmiu matrica.
+#     - jeigu is nuskaityto objekto buvo pasalinta pavyzdziu - nepamirskiti pries atliekant si zingsni ju pasalinti ir is detection
+#     p-reiksmiu matricos.
+#     - PAGALBA: normalizavimo zingsni gali pasalinti kai kurias genomines pozicijas (eilutes) is nuskaityto objekto, todel naudokite
+#     `rownames()`, kad suzinotumete, kurios pozicijos turi buti pasalintos.
+# ensure probes are in the same order in the mSetSq and detP objects
+####################################################################################################
+####################################################################################################
+# 6.  Ismeskite genomines pozicijas (eilutes) neturincias "CG" nukleotidu poros (CH) arba esancias salia DNR polimorfizmu
+#     - tam naudokite funkcija dropMethylationLoci(), galite perskaityti jos help().
+####################################################################################################
+mSetRaw <- dropMethylationLoci(mSetRaw, dropCH = TRUE)
+####################################################################################################
+# 7.  Pasalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti su funkcija getSex()).
+#     Vien moterų mėtginiai mūsų duomenyse
+####################################################################################################
+####################################################################################################
+# 8.  Po duomenu paruosimo is gauto objekto pasidarykite tris atskirus objektus:
+#     - pagrindine modifikacijos iverciu matrica: getBeta()
+#     - informacija apie pagrindines matricos meginius (stulpelius): pData()
+#     - informacija apie pagrindines matricos pozicijas (eilutes): getAnnotation()
+####################################################################################################
+beta <- getBeta(mSetRaw)
+pData <- pData(mSetRaw)
+annotation <- getAnnotation(mSetRaw)
+####################################################################################################
+# 9.  Savarankiskai parasykite koda, atliekanti IAC isskirciu ismetima.
+#     - Detalus sios proceduros aprasymas, net su kodo pavyzdziais, gali buti rastas cia:
+#     https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf)
+####################################################################################################
+####################################################################################################
+# 10. Atlikite bent viena kokybes kontroles zingsni aptarta paskaitu metu, arba susigalvota savo paties (zinoma galite atlikti ir daugiau nei viena).
+####################################################################################################
+####################################################################################################
+# 11. Issisaugokite paruostus duomenis (su saveRDS()), juos naudosite kitose uzduotyse
+####################################################################################################
+# Save multiple objects
+# save.image(file = "objects.Rdata")
+# save(data, detP, mSetRaw, mSetSq, rgSet, badPValues, keep, file="objects.Rdata")
 ```
