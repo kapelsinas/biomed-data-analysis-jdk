@@ -8,8 +8,6 @@ output: pdf_document
 options(scipen = 1, digits = 3)
 
 #Installing missing packages:
-list.of.packages <- c("randomcoloR", "ggplot2", "RcmdrMisc", "dplyr", "huxtable", "gridExtra", "RColorBrewer", "MASS", "IlluminaHumanMethylationEPICmanifest", "minfi", "IlluminaHumanMethylationEPICanno.ilm10b4.hg19")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 install.packages("Rtools")
 
