@@ -77,7 +77,7 @@ if (!file.exists("objects.Rdata")) {
 if (is.null(mSetSq)) {
   mSetSq <- preprocessFunnorm(rgSet) # It was used in the research
 }
-if (is.null(mSetSq)) {
+if (is.null(mSetRaw)) {
   mSetRaw <- preprocessRaw(rgSet)
 }
 
