@@ -28,8 +28,9 @@ load("objects.Rdata")
 ```{r Preparations_Task_QC, message=FALSE, warning=FALSE, include=FALSE}
 if (!file.exists("objects.Rdata")) {
   ################################################################################################
-  # 1.  Pasiruoskite sau paskirtus sample-key failus (apvalydami reiksmes, panasiai kaip aptareme paskaitu metu)
-  #     - sample-key nuskaitymui R galite naudoti read.csv() funkcija.
+  # 1.  Pasiruoškite sau paskirtus sample-key failus (apvalydami reikšmes, panašiai kaip aptarėme
+  #     paskaitų metu)
+  #     - sample-key nuskaitymui R galite naudoti read.csv() funkciją.
   # Importing data:
   ################################################################################################
   if (file.exists("data.csv")) {
@@ -38,19 +39,19 @@ if (!file.exists("objects.Rdata")) {
     names(data) <- tolower(names(data))
   }
   ################################################################################################
-  # 2.  Nuskaitykite parsisiustus idat failus i "RGChannelSet" tipo objekta
-  #     - tam naudokite `read.metharray.exp()` funkcija is R minfi bibliotekos
-  #     - si funkcija kaip argumenta naudoja "sample-key" lentele, kurioje stulpelis
-  #     Basename turi rodyti i failo vieta jusu kompiuteryje (galite paskaityti sios funkcijos help()).
-  #     - nuskaicius duomenis gauta objekta issaugokite su saveRDS()
-  #     - veliau ji pasikrauti i atminti galesite su readRDS() funkcija
+  # 2.  Nuskaitykite parsisiųstus idat failus į "RGChannelSet" tipo objektą
+  #     - tam naudokite `read.metharray.exp()` funkcią iš R minfi bibliotekos
+  #     - ši funkcija kaip argumentą naudoja "sample-key" lentelę, kurioje stulpelis Basename
+  #       turi rodyti į failo vietą jūsų kompiuteryje (galite paskaityti šios funkcijos help()).
+  #     - nuskaičius duomenis gautą objektą išsaugokite su saveRDS()
+  #     - vėliau jį pasikrauti į atmintį galėsite su readRDS() funkcija
   ################################################################################################
   rgSet <- read.metharray.exp(base = "IDATS")
   ################################################################################################
-  # 3.  Gaukite "detection p-value" kiekvienam DNR modifikacijos iverciui
-  #     - naudokite funkcija `detectionP()` is minfi
-  #     - si funkcija grazins iverciu matrica (vienas ivertis vienai modifikacijos reiksmei) parodanti ar
-  #     matuojamas intensyvumas skiriasi nuo background
+  # 3.  Gaukite "detection p-value" kiekvienam DNR modifikacijos įverčiui
+  #     - naudokite funkciją `detectionP()` iš minfi
+  #     - ši funkcija grąžins įverčių matricą (vienas ivertis vienai modifikacijos reiksmei)
+  #       parodanti ar matuojamas intensyvumas skiriasi nuo background
   ################################################################################################
   if (!is.null(rgSet)) {
     detP <- detectionP(rgSet)
@@ -58,8 +59,10 @@ if (!file.exists("objects.Rdata")) {
     badPValues <- colMeans(detP) > 0.01
     keep <- colMeans(detP) < 0.01
     
-    #     - is RGChannelSet objekto ismeskite visus meginius (stulpelius) kurie turi daugiau nei 1% "blogu" detection p reiksmiu.
-    #     - PAGALBA: is RGChannelSet objekto reiksmes ismesti galima taip, kaip ir is matricos: `myData[,-1]` - ismestu pirma megini (stulpeli)
+    #     - is RGChannelSet objekto ismeskite visus meginius (stulpelius) kurie turi daugiau
+    #       nei 1% "blogu" detection p reiksmiu.
+    #     - PAGALBA: is RGChannelSet objekto reiksmes ismesti galima taip, kaip ir is
+    #       matricos: `myData[,-1]` - ismestu pirma megini (stulpeli)
     rgSet <- rgSet[, keep]
     data <- data[keep,]
     detP <- detP[, keep]
@@ -71,8 +74,10 @@ if (!file.exists("objects.Rdata")) {
 ```{r Preparations_Task_Normalization, message=FALSE, warning=FALSE, include=FALSE}
 ####################################################################################################
 # 4.  Normalizuokite savo duomenis
-#     - naudokite viena is siu funkciju: preprocessSWAN(), preprocessFunnorm() or preproccessIllumina() is "minfi" bibliotekos.
-#     - galite pasirinkti laisvai, apie tai kuo skiriasi sie normalizavimo budai galite pasiskaityti siu funkciju help() dokumentacijoje.
+#     - naudokite viena is siu funkciju: preprocessSWAN(), preprocessFunnorm() or
+#       preproccessIllumina() is "minfi" bibliotekos.
+#     - galite pasirinkti laisvai, apie tai kuo skiriasi sie normalizavimo budai galite
+#       pasiskaityti siu funkciju help() dokumentacijoje.
 ####################################################################################################
 if (is.null(mSetSq)) {
   mSetSq <- preprocessFunnorm(rgSet) # It was used in the research
@@ -82,11 +87,14 @@ if (is.null(mSetRaw)) {
 }
 
 ####################################################################################################
-# 5.  Ismeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogu" detection p reiksmiu
-#     - detection p-reikmes paskaiciuojamos pries normalizacija, taigi naudokite pries tai paskaiciuota p-reiksmiu matrica.
-#     - jeigu is nuskaityto objekto buvo pasalinta pavyzdziu - nepamirskiti pries atliekant si zingsni ju pasalinti ir is detection
-#     p-reiksmiu matricos.
-#     - PAGALBA: normalizavimo zingsni gali pasalinti kai kurias genomines pozicijas (eilutes) is nuskaityto objekto, todel naudokite
+# 5.  Ismeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogu" detection
+#     p reiksmiu
+#     - detection p-reikmes paskaiciuojamos pries normalizacija, taigi naudokite pries tai
+#       paskaiciuota p-reiksmiu matrica.
+#     - jeigu is nuskaityto objekto buvo pasalinta pavyzdziu - nepamirskiti pries atliekant si
+#       zingsni ju pasalinti ir is detection p-reiksmiu matricos.
+#     - PAGALBA: normalizavimo zingsni gali pasalinti kai kurias genomines pozicijas (eilutes)
+#       is nuskaityto objekto, todel naudokite
 #     `rownames()`, kad suzinotumete, kurios pozicijos turi buti pasalintos.
 # ensure probes are in the same order in the mSetSq and detP objects
 ####################################################################################################
@@ -103,13 +111,15 @@ mSetSqFlt <- mSetSq[keep,]
 mSetSqFlt
 
 ####################################################################################################
-# 6.  Ismeskite genomines pozicijas (eilutes) neturincias "CG" nukleotidu poros (CH) arba esancias salia DNR polimorfizmu
+# 6.  Ismeskite genomines pozicijas (eilutes) neturincias "CG" nukleotidu poros (CH) arba esancias
+#     salia DNR polimorfizmu
 #     - tam naudokite funkcija dropMethylationLoci(), galite perskaityti jos help().
 ####################################################################################################
 mSetSqFlt <- dropMethylationLoci(mSetSqFlt, dropCH = TRUE)
 
 ####################################################################################################
-# 7.  Pasalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti su funkcija getSex()).
+# 7.  Pasalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti
+#     su funkcija getSex()).
 #     Vien moterų mėtginiai mūsų duomenyse
 ####################################################################################################
 estSex <- getSex(mSetSqFlt)
@@ -131,7 +141,8 @@ annotation <- getAnnotation(mSetSqFlt)
 ####################################################################################################
 
 ####################################################################################################
-# 10. Atlikite bent viena kokybes kontroles zingsni aptarta paskaitu metu, arba susigalvota savo paties (zinoma galite atlikti ir daugiau nei viena).
+# 10. Atlikite bent viena kokybes kontroles zingsni aptarta paskaitu metu, arba susigalvota savo
+#     paties (zinoma galite atlikti ir daugiau nei viena).
 ####################################################################################################
 
 ####################################################################################################
