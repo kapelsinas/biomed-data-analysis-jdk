@@ -79,12 +79,21 @@ if (!file.exists("objects.Rdata")) {
 #     - galite pasirinkti laisvai, apie tai kuo skiriasi sie normalizavimo budai galite
 #       pasiskaityti siu funkciju help() dokumentacijoje.
 ####################################################################################################
-if (is.null(mSetSq)) {
+if (exists(mSetSq)) {
   mSetSq <- preprocessFunnorm(rgSet) # It was used in the research
 }
-if (is.null(mSetRaw)) {
+
+if (exists(mSetRaw)) {
   mSetRaw <- preprocessRaw(rgSet)
 }
+
+####################################################################################################
+# 7.  Pasalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti
+#     su funkcija getSex()).
+#     Vien moterų mėtginiai mūsų duomenyse
+####################################################################################################
+estSex <- getSex(mSetSq)
+estSex$predictedSex == 'F'
 
 ####################################################################################################
 # 5.  Ismeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogu" detection
@@ -99,10 +108,10 @@ if (is.null(mSetRaw)) {
 # ensure probes are in the same order in the mSetSq and detP objects
 ####################################################################################################
 # ensure probes are in the same order in the mSetSq and detP objects
-detP <- detP[match(featureNames(mSetSq),rownames(detP)),] 
+detP <- detP[match(featureNames(mSetSq),rownames(detP)),]
 
 # remove any probes that have failed in one or more samples
-keep <- rowSums(detP < 0.01) == ncol(mSetSq) 
+keep <- rowSums(detP < 0.01) == ncol(mSetSq)
 table(keep)
 ## keep
 ##  FALSE   TRUE 
@@ -117,12 +126,6 @@ mSetSqFlt
 ####################################################################################################
 mSetSqFlt <- dropMethylationLoci(mSetSqFlt, dropCH = TRUE)
 
-####################################################################################################
-# 7.  Pasalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti
-#     su funkcija getSex()).
-#     Vien moterų mėtginiai mūsų duomenyse
-####################################################################################################
-estSex <- getSex(mSetSqFlt)
 ####################################################################################################
 # 8.  Po duomenu paruosimo is gauto objekto pasidarykite tris atskirus objektus:
 #     - pagrindine modifikacijos iverciu matrica: getBeta()
@@ -151,7 +154,8 @@ annotation <- getAnnotation(mSetSqFlt)
 # Save multiple objects
 # save.image(file = "objects.Rdata")
 # save(data, detP, mSetRaw, mSetSq, rgSet, badPValues, beta, pData, annotation, keep, file="objects.Rdata")
-save(beta, file="beta.Rdata")
-save(pData, file="pData.Rdata")
-save(annotation, file="annotation.Rdata")
+# save(beta, file="beta.Rdata")
+# save(pData, file="pData.Rdata")
+# save(annotation, file="annotation.Rdata")
+# load("pData.Rdata")
 ```
