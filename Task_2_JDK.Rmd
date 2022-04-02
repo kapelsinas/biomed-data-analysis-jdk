@@ -29,7 +29,7 @@ BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")
 if (!file.exists("objects.Rdata")) {
   ################################################################################################
   # 1.  Pasiruoškite sau paskirtus sample-key failus (apvalydami reikšmes, panašiai kaip aptarėme
-  paskaitų metu)
+  #     paskaitų metu)
   #     - sample-key nuskaitymui R galite naudoti read.csv() funkciją.
   # Importing data:
   ################################################################################################
