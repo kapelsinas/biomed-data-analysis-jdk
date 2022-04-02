@@ -22,7 +22,7 @@ BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")
 
 ```{r Preparations_Task, message=FALSE, warning=FALSE, include=FALSE}
 # To load the data
-# load("objects.Rdata")
+load("objects.Rdata")
 ```
 
 ```{r Preparations_Task_QC, message=FALSE, warning=FALSE, include=FALSE}
@@ -90,18 +90,29 @@ if (is.null(mSetRaw)) {
 #     `rownames()`, kad suzinotumete, kurios pozicijos turi buti pasalintos.
 # ensure probes are in the same order in the mSetSq and detP objects
 ####################################################################################################
+# ensure probes are in the same order in the mSetSq and detP objects
+detP <- detP[match(featureNames(mSetSq),rownames(detP)),] 
+
+# remove any probes that have failed in one or more samples
+keep <- rowSums(detP < 0.01) == ncol(mSetSq) 
+table(keep)
+## keep
+##  FALSE   TRUE 
+##  9713    856146 
+mSetSqFlt <- mSetSq[keep,]
+mSetSqFlt
 
 ####################################################################################################
 # 6.  Ismeskite genomines pozicijas (eilutes) neturincias "CG" nukleotidu poros (CH) arba esancias salia DNR polimorfizmu
 #     - tam naudokite funkcija dropMethylationLoci(), galite perskaityti jos help().
 ####################################################################################################
-mSetRaw <- dropMethylationLoci(mSetRaw, dropCH = TRUE)
+mSetSqFlt <- dropMethylationLoci(mSetSqFlt, dropCH = TRUE)
 
 ####################################################################################################
 # 7.  Pasalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti su funkcija getSex()).
 #     Vien moterų mėtginiai mūsų duomenyse
 ####################################################################################################
-
+estSex <- getSex(mSetSqFlt)
 ####################################################################################################
 # 8.  Po duomenu paruosimo is gauto objekto pasidarykite tris atskirus objektus:
 #     - pagrindine modifikacijos iverciu matrica: getBeta()
@@ -109,9 +120,9 @@ mSetRaw <- dropMethylationLoci(mSetRaw, dropCH = TRUE)
 #     - informacija apie pagrindines matricos pozicijas (eilutes): getAnnotation()
 ####################################################################################################
 
-beta <- getBeta(mSetRaw)
-pData <- pData(mSetRaw)
-annotation <- getAnnotation(mSetRaw)
+beta <- getBeta(mSetSqFlt)
+pData <- pData(mSetSqFlt)
+annotation <- getAnnotation(mSetSqFlt)
 
 ####################################################################################################
 # 9.  Savarankiskai parasykite koda, atliekanti IAC isskirciu ismetima.
@@ -128,5 +139,8 @@ annotation <- getAnnotation(mSetRaw)
 ####################################################################################################
 # Save multiple objects
 # save.image(file = "objects.Rdata")
-# save(data, detP, mSetRaw, mSetSq, rgSet, badPValues, keep, file="objects.Rdata")
+# save(data, detP, mSetRaw, mSetSq, rgSet, badPValues, beta, pData, annotation, keep, file="objects.Rdata")
+save(beta, file="beta.Rdata")
+save(pData, file="pData.Rdata")
+save(annotation, file="annotation.Rdata")
 ```

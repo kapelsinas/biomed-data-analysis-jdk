@@ -50,4 +50,4 @@ vignettes/*.pdf
 # Ignore genereated big files
 detectionP.csv
 output.rds
-objects.Rdata
+*.Rdata
