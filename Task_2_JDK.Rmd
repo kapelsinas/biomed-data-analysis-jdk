@@ -64,7 +64,7 @@ if (!file.exists("objects.Rdata")) {
     #     - PAGALBA: is RGChannelSet objekto reiksmes ismesti galima taip, kaip ir is
     #       matricos: `myData[,-1]` - ismestu pirma megini (stulpeli)
     rgSet <- rgSet[, keep]
-    data <- data[keep,]
+    data <- data[keep, ]
     detP <- detP[, keep]
   }
   
@@ -108,15 +108,15 @@ estSex$predictedSex == 'F'
 # ensure probes are in the same order in the mSetSq and detP objects
 ####################################################################################################
 # ensure probes are in the same order in the mSetSq and detP objects
-detP <- detP[match(featureNames(mSetSq),rownames(detP)),]
+detP <- detP[match(featureNames(mSetSq), rownames(detP)), ]
 
 # remove any probes that have failed in one or more samples
 keep <- rowSums(detP < 0.01) == ncol(mSetSq)
 table(keep)
 ## keep
-##  FALSE   TRUE 
-##  9713    856146 
-mSetSqFlt <- mSetSq[keep,]
+##  FALSE   TRUE
+##  9713    856146
+mSetSqFlt <- mSetSq[keep, ]
 mSetSqFlt
 
 ####################################################################################################
