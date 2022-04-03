@@ -88,7 +88,7 @@ if (exists(mSetRaw)) {
 }
 
 ####################################################################################################
-# 7.  Pasalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti
+# 7.  Pašalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti
 #     su funkcija getSex()).
 #     Vien moterų mėtginiai mūsų duomenyse
 ####################################################################################################
@@ -96,15 +96,15 @@ estSex <- getSex(mSetSq)
 estSex$predictedSex == 'F'
 
 ####################################################################################################
-# 5.  Ismeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogu" detection
-#     p reiksmiu
-#     - detection p-reikmes paskaiciuojamos pries normalizacija, taigi naudokite pries tai
-#       paskaiciuota p-reiksmiu matrica.
-#     - jeigu is nuskaityto objekto buvo pasalinta pavyzdziu - nepamirskiti pries atliekant si
-#       zingsni ju pasalinti ir is detection p-reiksmiu matricos.
-#     - PAGALBA: normalizavimo zingsni gali pasalinti kai kurias genomines pozicijas (eilutes)
-#       is nuskaityto objekto, todel naudokite
-#     `rownames()`, kad suzinotumete, kurios pozicijos turi buti pasalintos.
+# 5.  Išmeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogų" detection
+#     p reikšmių
+#     - detection p-reikėes paskaičiuojamos prieš normalizaciją, taigi naudokite prieš tai
+#       paskaičiuotą p-reiksmių matricą.
+#     - jeigu iš nuskaityto objekto buvo pašalinta pavyzdžių - nepamirškite prieš atliekant šį
+#       žingsnį jų pašalinti ir iš detection p-reiksmių matricos.
+#     - PAGALBA: normalizavimo žingsnis gali pašalinti kai kurias genomines pozicijas (eilutes)
+#       iš nuskaityto objekto, todėl naudokite
+#     `rownames()`, kad sužinotumėte, kurios pozicijos turi būti pašalintos.
 # ensure probes are in the same order in the mSetSq and detP objects
 ####################################################################################################
 # ensure probes are in the same order in the mSetSq and detP objects
@@ -120,17 +120,17 @@ mSetSqFlt <- mSetSq[keep, ]
 mSetSqFlt
 
 ####################################################################################################
-# 6.  Ismeskite genomines pozicijas (eilutes) neturincias "CG" nukleotidu poros (CH) arba esancias
-#     salia DNR polimorfizmu
-#     - tam naudokite funkcija dropMethylationLoci(), galite perskaityti jos help().
+# 6.  Išmeskite genomines pozicijas (eilutes) neturinčias "CG" nukleotidų poros (CH) arba esančias
+#     šalia DNR polimorfizmų
+#     - tam naudokite funkciją dropMethylationLoci(), galite perskaityti jos help().
 ####################################################################################################
 mSetSqFlt <- dropMethylationLoci(mSetSqFlt, dropCH = TRUE)
 
 ####################################################################################################
-# 8.  Po duomenu paruosimo is gauto objekto pasidarykite tris atskirus objektus:
-#     - pagrindine modifikacijos iverciu matrica: getBeta()
-#     - informacija apie pagrindines matricos meginius (stulpelius): pData()
-#     - informacija apie pagrindines matricos pozicijas (eilutes): getAnnotation()
+# 8.  Po duomenų paruošimo iš gauto objekto pasidarykite tris atskirus objektus:
+#     - pagrindinė modifikacijos įverčių matrica: getBeta()
+#     - informacija apie pagrindinės matricos mėginius (stulpelius): pData()
+#     - informacija apie pagrindinės matricos pozicijas (eilutes): getAnnotation()
 ####################################################################################################
 
 beta <- getBeta(mSetSqFlt)
@@ -138,18 +138,18 @@ pData <- pData(mSetSqFlt)
 annotation <- getAnnotation(mSetSqFlt)
 
 ####################################################################################################
-# 9.  Savarankiskai parasykite koda, atliekanti IAC isskirciu ismetima.
+# 9.  Savarankiškai parašykite kodą, atliekantį IAC išskirčių išmetimą.
 #     - Detalus sios proceduros aprasymas, net su kodo pavyzdziais, gali buti rastas cia:
 #     https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf)
 ####################################################################################################
 
 ####################################################################################################
-# 10. Atlikite bent viena kokybes kontroles zingsni aptarta paskaitu metu, arba susigalvota savo
-#     paties (zinoma galite atlikti ir daugiau nei viena).
+# 10. Atlikite bent vieną kokybės kontrolės žingsnį aptartą paskaitų metu, arba susigalvotą savo
+#     paties (žinoma galite atlikti ir daugiau nei vieną).
 ####################################################################################################
 
 ####################################################################################################
-# 11. Issisaugokite paruostus duomenis (su saveRDS()), juos naudosite kitose uzduotyse
+# 11. Išsisaugokite paruoštus duomenis (su saveRDS()), juos naudosite kitose užduotyse
 ####################################################################################################
 # Save multiple objects
 # save.image(file = "objects.Rdata")
