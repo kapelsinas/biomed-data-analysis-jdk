@@ -55,14 +55,14 @@ if (!file.exists("objects.Rdata")) {
   ################################################################################################
   if (!is.null(rgSet)) {
     detP <- detectionP(rgSet)
-    #     - visas vertes kuriu p-verte didesne uz 0.01 laikykite "blogomis"
+    #     - visas vertes kurių p-vertė didesnė už 0.01 laikykite "blogomis"
     badPValues <- colMeans(detP) > 0.01
     keep <- colMeans(detP) < 0.01
     
-    #     - is RGChannelSet objekto ismeskite visus meginius (stulpelius) kurie turi daugiau
-    #       nei 1% "blogu" detection p reiksmiu.
-    #     - PAGALBA: is RGChannelSet objekto reiksmes ismesti galima taip, kaip ir is
-    #       matricos: `myData[,-1]` - ismestu pirma megini (stulpeli)
+    #     - iš RGChannelSet objekto išmeskite visus mėginius (stulpelius), kurie turi daugiau
+    #       nei 1% "blogų" detection p reikšmių.
+    #     - PAGALBA: iš RGChannelSet objekto reikšmes išmesti galima taip, kaip ir iš
+    #       matricos: `myData[,-1]` - išmestų pirmą mėginį (stulpelį)
     rgSet <- rgSet[, keep]
     data <- data[keep, ]
     detP <- detP[, keep]
@@ -74,10 +74,10 @@ if (!file.exists("objects.Rdata")) {
 ```{r Preparations_Task_Normalization, message=FALSE, warning=FALSE, include=FALSE}
 ####################################################################################################
 # 4.  Normalizuokite savo duomenis
-#     - naudokite viena is siu funkciju: preprocessSWAN(), preprocessFunnorm() or
-#       preproccessIllumina() is "minfi" bibliotekos.
-#     - galite pasirinkti laisvai, apie tai kuo skiriasi sie normalizavimo budai galite
-#       pasiskaityti siu funkciju help() dokumentacijoje.
+#     - naudokite vieną iš šių funkcijų: preprocessSWAN(), preprocessFunnorm() arba
+#       preproccessIllumina() iš "minfi" bibliotekos.
+#     - galite pasirinkti laisvai, apie tai kuo skiriasi šie normalizavimo būdai galite
+#       pasiskaityti šių funkcijų help() dokumentacijoje.
 ####################################################################################################
 if (exists(mSetSq)) {
   mSetSq <- preprocessFunnorm(rgSet) # It was used in the research
@@ -88,9 +88,9 @@ if (exists(mSetRaw)) {
 }
 
 ####################################################################################################
-# 7.  Pašalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti
+# 7.  Pašalinkite mėginius, kurių nurodyta lytis skiriasi nuo spėjamos lyties (spėjimus galite gauti
 #     su funkcija getSex()).
-#     Vien moterų mėtginiai mūsų duomenyse
+#     Vien moterų mėginiai mūsų duomenyse
 ####################################################################################################
 estSex <- getSex(mSetSq)
 estSex$predictedSex == 'F'
@@ -98,7 +98,7 @@ estSex$predictedSex == 'F'
 ####################################################################################################
 # 5.  Išmeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogų" detection
 #     p reikšmių
-#     - detection p-reikėes paskaičiuojamos prieš normalizaciją, taigi naudokite prieš tai
+#     - detection p-reikšmės paskaičiuojamos prieš normalizaciją, taigi naudokite prieš tai
 #       paskaičiuotą p-reiksmių matricą.
 #     - jeigu iš nuskaityto objekto buvo pašalinta pavyzdžių - nepamirškite prieš atliekant šį
 #       žingsnį jų pašalinti ir iš detection p-reiksmių matricos.
