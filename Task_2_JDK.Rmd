@@ -63,7 +63,6 @@ if (!file.exists("objects.Rdata")) {
   detP <- detectionP(rgSet)
   
   #     - visas vertes kuriu p-verte didesne uz 0.01 laikykite "blogomis"
-  
   badPValues <- colMeans(detP) > 0.01
   keep <- colMeans(detP) < 0.01
   # Nieko neišsimetė
@@ -83,17 +82,17 @@ if (!file.exists("objects.Rdata")) {
 
 ####################################################################################################
 # 4.  Normalizuokite savo duomenis
-#     - naudokite viena is siu funkciju: preprocessSWAN(), preprocessFunnorm() or
-#       preproccessIllumina() is "minfi" bibliotekos.
-#     - galite pasirinkti laisvai, apie tai kuo skiriasi sie normalizavimo budai galite
-#       pasiskaityti siu funkciju help() dokumentacijoje.
+#     - naudokite vieną iš šių funkcijų: preprocessSWAN(), preprocessFunnorm() arba
+#       preproccessIllumina() iš "minfi" bibliotekos.
+#     - galite pasirinkti laisvai, apie tai kuo skiriasi šie normalizavimo būdai galite
+#       pasiskaityti šių funkcijų help() dokumentacijoje.
 ####################################################################################################
 mSetSq <- preprocessFunnorm(rgSet) # It was used in the research
 
 mSetRaw <- preprocessRaw(rgSet)
 
 ####################################################################################################
-# 7.  Pašalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti
+# 7.  Pašalinkite mėginius, kurių nurodyta lytis skiriasi nuo spėjamos lyties (spėjimus galite gauti
 #     su funkcija getSex()).
 ####################################################################################################
 
@@ -104,7 +103,7 @@ estSex$predictedSex == 'F'
 ####################################################################################################
 # 5.  Išmeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogų" detection
 #     p reikšmių
-#     - detection p-reikėes paskaičiuojamos prieš normalizaciją, taigi naudokite prieš tai
+#     - detection p-reikšmės paskaičiuojamos prieš normalizaciją, taigi naudokite prieš tai
 #       paskaičiuotą p-reiksmių matricą.
 #     - jeigu iš nuskaityto objekto buvo pašalinta pavyzdžių - nepamirškite prieš atliekant šį
 #       žingsnį jų pašalinti ir iš detection p-reiksmių matricos.
