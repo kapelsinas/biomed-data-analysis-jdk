@@ -26,18 +26,22 @@ load("objects.Rdata")
 ```
 
 ```{r Preparations_Task_QC, message=FALSE, warning=FALSE, include=FALSE}
+
 if (!file.exists("objects.Rdata")) {
+  
   ################################################################################################
   # 1.  Pasiruoškite sau paskirtus sample-key failus (apvalydami reikšmes, panašiai kaip aptarėme
   #     paskaitų metu)
   #     - sample-key nuskaitymui R galite naudoti read.csv() funkciją.
   # Importing data:
   ################################################################################################
+  
   if (file.exists("data.csv")) {
     data <- read.csv("data.csv")
     # Changing column letters into lower case:
     names(data) <- tolower(names(data))
   }
+  
   ################################################################################################
   # 2.  Nuskaitykite parsisiųstus idat failus į "RGChannelSet" tipo objektą
   #     - tam naudokite `read.metharray.exp()` funkcią iš R minfi bibliotekos
@@ -46,32 +50,37 @@ if (!file.exists("objects.Rdata")) {
   #     - nuskaičius duomenis gautą objektą išsaugokite su saveRDS()
   #     - vėliau jį pasikrauti į atmintį galėsite su readRDS() funkcija
   ################################################################################################
+  
   rgSet <- read.metharray.exp(base = "IDATS")
+  
   ################################################################################################
   # 3.  Gaukite "detection p-value" kiekvienam DNR modifikacijos įverčiui
   #     - naudokite funkciją `detectionP()` iš minfi
   #     - ši funkcija grąžins įverčių matricą (vienas ivertis vienai modifikacijos reiksmei)
   #       parodanti ar matuojamas intensyvumas skiriasi nuo background
   ################################################################################################
-  if (!is.null(rgSet)) {
-    detP <- detectionP(rgSet)
-    #     - visas vertes kuriu p-verte didesne uz 0.01 laikykite "blogomis"
-    badPValues <- colMeans(detP) > 0.01
-    keep <- colMeans(detP) < 0.01
-    
-    #     - is RGChannelSet objekto ismeskite visus meginius (stulpelius) kurie turi daugiau
-    #       nei 1% "blogu" detection p reiksmiu.
-    #     - PAGALBA: is RGChannelSet objekto reiksmes ismesti galima taip, kaip ir is
-    #       matricos: `myData[,-1]` - ismestu pirma megini (stulpeli)
-    rgSet <- rgSet[, keep]
-    data <- data[keep, ]
-    detP <- detP[, keep]
-  }
+  
+  detP <- detectionP(rgSet)
+  
+  #     - visas vertes kuriu p-verte didesne uz 0.01 laikykite "blogomis"
+  
+  badPValues <- colMeans(detP) > 0.01
+  keep <- colMeans(detP) < 0.01
+  # Nieko neišsimetė
+  
+  #     - is RGChannelSet objekto ismeskite visus meginius (stulpelius) kurie turi daugiau
+  #       nei 1% "blogu" detection p reiksmiu.
+  #     - PAGALBA: is RGChannelSet objekto reiksmes ismesti galima taip, kaip ir is
+  #       matricos: `myData[,-1]` - ismestu pirma megini (stulpeli)
+  rgSet <- rgSet[, keep]
+  data <- data[keep,]
+  detP <- detP[, keep]
   
 }
 ```
 
 ```{r Preparations_Task_Normalization, message=FALSE, warning=FALSE, include=FALSE}
+
 ####################################################################################################
 # 4.  Normalizuokite savo duomenis
 #     - naudokite viena is siu funkciju: preprocessSWAN(), preprocessFunnorm() or
@@ -79,21 +88,18 @@ if (!file.exists("objects.Rdata")) {
 #     - galite pasirinkti laisvai, apie tai kuo skiriasi sie normalizavimo budai galite
 #       pasiskaityti siu funkciju help() dokumentacijoje.
 ####################################################################################################
-if (exists(mSetSq)) {
-  mSetSq <- preprocessFunnorm(rgSet) # It was used in the research
-}
+mSetSq <- preprocessFunnorm(rgSet) # It was used in the research
 
-if (exists(mSetRaw)) {
-  mSetRaw <- preprocessRaw(rgSet)
-}
+mSetRaw <- preprocessRaw(rgSet)
 
 ####################################################################################################
 # 7.  Pašalinkite meginius kuriu nurodyta lytis skiriasi nuo spejamos lyties (spejimus galite gauti
 #     su funkcija getSex()).
-#     Vien moterų mėtginiai mūsų duomenyse
 ####################################################################################################
+
 estSex <- getSex(mSetSq)
 estSex$predictedSex == 'F'
+# Vien moterų mėginiai
 
 ####################################################################################################
 # 5.  Išmeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogų" detection
@@ -107,15 +113,18 @@ estSex$predictedSex == 'F'
 #     `rownames()`, kad sužinotumėte, kurios pozicijos turi būti pašalintos.
 # ensure probes are in the same order in the mSetSq and detP objects
 ####################################################################################################
+
 # ensure probes are in the same order in the mSetSq and detP objects
 detP <- detP[match(featureNames(mSetSq), rownames(detP)), ]
 
 # remove any probes that have failed in one or more samples
 keep <- rowSums(detP < 0.01) == ncol(mSetSq)
+
 table(keep)
 ## keep
 ##  FALSE   TRUE
 ##  9713    856146
+
 mSetSqFlt <- mSetSq[keep, ]
 mSetSqFlt
 
@@ -124,6 +133,7 @@ mSetSqFlt
 #     šalia DNR polimorfizmų
 #     - tam naudokite funkciją dropMethylationLoci(), galite perskaityti jos help().
 ####################################################################################################
+
 mSetSqFlt <- dropMethylationLoci(mSetSqFlt, dropCH = TRUE)
 
 ####################################################################################################
@@ -143,6 +153,8 @@ annotation <- getAnnotation(mSetSqFlt)
 #     https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf)
 ####################################################################################################
 
+
+
 ####################################################################################################
 # 10. Atlikite bent vieną kokybės kontrolės žingsnį aptartą paskaitų metu, arba susigalvotą savo
 #     paties (žinoma galite atlikti ir daugiau nei vieną).
@@ -157,5 +169,5 @@ annotation <- getAnnotation(mSetSqFlt)
 # save(beta, file="beta.Rdata")
 # save(pData, file="pData.Rdata")
 # save(annotation, file="annotation.Rdata")
-# load("pData.Rdata")
+# load("beta.Rdata")
 ```
