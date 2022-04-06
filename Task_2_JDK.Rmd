@@ -4,8 +4,10 @@ author: "Jaroslav Rutkovskij, Danielė Stasiūnaitė, Karolis Augustauskas (JDK)
 date: "3/18/2022"
 output: pdf_document
 ---
-```{r Preparations, message=FALSE, warning=FALSE, include=FALSE}
+# Duomenų paruošimas
+```{r Preparations_1, message=FALSE, warning=FALSE, include=FALSE}
 options(scipen = 1, digits = 3)
+library(cluster)
 library(minfi)
 library(IlluminaHumanMethylationEPICmanifest)
 if (!require("BiocManager", quietly = TRUE))
@@ -13,56 +15,59 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")
 ```
 
-```{r Preparations_Task, message=FALSE, warning=FALSE, include=FALSE}
+```{r Preparations_2, message=FALSE, warning=FALSE, include=FALSE}
 # To load the data
 # load("objects.Rdata")
 # To save the data
 # save.image(file = "objects.Rdata")
 ```
 
+## Duomenų paruošimo žingsniai
+**1. Pasiruoškite sau paskirtus sample-key failus (apvalydami reikšmes).**\
+Pateiktoje *sample-key* lentelėje nebuvo aptikta anotacijos, gramatikos klaidų.
+Stulpelių pavadinimai buvo pateikti mažosiomis raidėmis, todėl jie nebuvo
+koreguojami. Taip pat buvo tikrinami skaitinės informacijos rėžiai, tačiau
+visa informacija buvo pateikta korektiškai ir teisingai, todėl papildomos
+modifikacijos nebuvo atliekamos.
+
 ```{r Task_1, message=FALSE, warning=FALSE, include=FALSE}
-################################################################################################
-# 1.  Pasiruoškite sau paskirtus sample-key failus (apvalydami reikšmes, panašiai kaip aptarėme
-#     paskaitų metu)
-#     - sample-key nuskaitymui R galite naudoti read.csv() funkciją.
 # Importing data:
-################################################################################################
 if (file.exists("data.csv")) {
   data <- read.csv("data.csv")
 }
 ```
 
+**2. Nuskaitykite parsisiųstus idat failus į "RGChannelSet" tipo objektą.**\
+Idat failų nuskaitymui buvo sėkmingai panaudota *read.metharray.exp()* funkcija
+iš R *minfi* bibliotekos, kuri buvo įkelta prieš atliekant duomenų valymą
+(R programos Preparations bloke).
+
 ```{r Task_2, message=FALSE, warning=FALSE, include=FALSE}
-################################################################################################
-# 2.  Nuskaitykite parsisiųstus idat failus į "RGChannelSet" tipo objektą
-#     - tam naudokite `read.metharray.exp()` funkcią iš R minfi bibliotekos
-#     - ši funkcija kaip argumentą naudoja "sample-key" lentelę, kurioje stulpelis Basename
-#       turi rodyti į failo vietą jūsų kompiuteryje (galite paskaityti šios funkcijos help()).
-#     - nuskaičius duomenis gautą objektą išsaugokite su saveRDS()
-#     - vėliau jį pasikrauti į atmintį galėsite su readRDS() funkcija
-################################################################################################
 rgSet <- read.metharray.exp(base = "IDATS")
 save(rgSet, file = "rgSet0.RData")
 ```
 
-```{r Task_3, message=FALSE, warning=FALSE, include=FALSE}
-################################################################################################
-# 3.  Gaukite "detection p-value" kiekvienam DNR modifikacijos įverčiui
-#     - naudokite funkciją `detectionP()` iš minfi
-#     - ši funkcija grąžins įverčių matricą (vienas ivertis vienai modifikacijos reiksmei)
-#       parodanti ar matuojamas intensyvumas skiriasi nuo background
-################################################################################################
+**3. Gaukite "detection p-value" kiekvienam DNR modifikacijos įverčiui.**\
+***Detection p-value*** matrica kiekvienam DNR modifikacijos įverčiui gauta,
+naudojant *detectionP()* funkciją iš *minfi* bibliotekos.
+
+```{r Task_3_1, message=FALSE, warning=FALSE, include=FALSE}
 detP <- detectionP(rgSet)
 save(detP, file = "detP0.Rdata")
-NROW(rgSet) #
-#     - visas vertes kuriu p-verte didesne uz 0.01 laikykite "blogomis"
+NROW(rgSet)
+
+# Visos vertės, kurių p-vertė > 0.01, laikomos "blogomis":
 badPValues <- colMeans(detP) > 0.01
+
+# Išsaugomos tos vertės, kurių p-vertė < 0.01:
 keep <- colMeans(detP) < 0.01
-# Nieko neišsimetėme
-#     - is RGChannelSet objekto ismeskite visus meginius (stulpelius) kurie turi daugiau
-#       nei 1% "blogu" detection p reiksmiu.
-#     - PAGALBA: is RGChannelSet objekto reiksmes ismesti galima taip, kaip ir is
-#       matricos: `myData[,-1]` - ismestu pirma megini (stulpeli)
+```
+
+**Patikrinus, ar yra p-verčių didesnių už 0.01, tokių verčių nebuvo aptikta.**\
+**Iš RGChannelSet objekto išmeskite visus mėginius (stulpelius), kurie turi**
+**daugiau nei 1% "blogų" *detection p* reikšmių.**
+
+```{r Task_3_2, message=FALSE, warning=FALSE, include=FALSE}
 rgSet <- rgSet[, keep]
 data <- data[keep,]
 detP <- detP[, keep]
@@ -72,75 +77,76 @@ save(detP, file = "detP1.Rdata")
 save(data, file ="data0.RData")
 ```
 
+**4. Normalizuokite savo duomenis, naudojant preprocessSWAN(),**
+**preprocessFunnorm() arba preproccessIllumina() funkcijas iš *minfi* **
+**bibliotekos.**\
+Duomenims normalizuoti buvo pasirinkta *preprocessFunnorm()* funkcija, nes ji
+buvo naudota [straipsnyje](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7607658/)
+aprašyto tyrimo metu. Atliekant Biomedicininės duomenų analizės užduotis yra
+siekiama kuo tiksliau atkartoti šiame straipsnyje aprašyto tyrimo metu atliktą
+statistinę gautų duomenų analizę.
+
 ```{r Task_4, message=FALSE, warning=FALSE, include=FALSE}
-####################################################################################################
-# 4.  Normalizuokite savo duomenis
-#     - naudokite vieną iš šių funkcijų: preprocessSWAN(), preprocessFunnorm() arba
-#       preproccessIllumina() iš "minfi" bibliotekos.
-#     - galite pasirinkti laisvai, apie tai kuo skiriasi šie normalizavimo būdai galite
-#       pasiskaityti šių funkcijų help() dokumentacijoje.
-####################################################################################################
-mSetSq <- preprocessFunnorm(rgSet) # Buvo naudotą mūsų straipsnyje
+mSetSq <- preprocessFunnorm(rgSet)
 save(mSetSq, file = "mSetSq0.RData")
 mSetRaw <- preprocessRaw(rgSet)
 save(mSetRaw, file = "mSetRaw0.RData")
 ```
-```{r Task_7, message=FALSE, warning=FALSE, include=FALSE}
-####################################################################################################
-# 7.  Pašalinkite mėginius, kurių nurodyta lytis skiriasi nuo spėjamos lyties (spėjimus galite gauti
-#     su funkcija getSex()).
-####################################################################################################
-estSex <- getSex(mSetSq, cutoff = -2)
-estSex$predictedSex == 'F'
-# Vien moterų mėginiai
-rm(estSex)
-```
-```{r Task_5, message=FALSE, warning=FALSE, include=FALSE}
-####################################################################################################
-# 5.  Išmeskite visas genomines pozicijas (eilutes) kurios turi daugiau nei 1% "blogų" detection
-#     p reikšmių
-#     - detection p-reikšmės paskaičiuojamos prieš normalizaciją, taigi naudokite prieš tai
-#       paskaičiuotą p-reiksmių matricą.
-#     - jeigu iš nuskaityto objekto buvo pašalinta pavyzdžių - nepamirškite prieš atliekant šį
-#       žingsnį jų pašalinti ir iš detection p-reiksmių matricos.
-#     - PAGALBA: normalizavimo žingsnis gali pašalinti kai kurias genomines pozicijas (eilutes)
-#       iš nuskaityto objekto, todėl naudokite
-#     `rownames()`, kad sužinotumėte, kurios pozicijos turi būti pašalintos.
-# ensure probes are in the same order in the mSetSq and detP objects
-####################################################################################################
-# ensure probes are in the same order in the mSetSq and detP objects
+
+**5. Išmeskite visas genomines pozicijas (eilutes), kurios turi daugiau nei 1%**
+**"blogų" *detection p* reikšmių.**
+
+```{r Task_5, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# ensure probes are in the same order in the mSetSq and detP objects:
 detP <- detP[match(featureNames(mSetSq), rownames(detP)), ]
 save(detP, file = "detP1.Rdata")
-# remove any probes that have failed in one or more samples
+
+# remove any probes that have failed in one or more samples:
 keep <- rowSums(detP < 0.01) == ncol(mSetSq)
-NROW(mSetSq) #
+NROW(mSetSq)
 table(keep)
-## keep
+##  keep
 ##  FALSE   TRUE
 ##  9713    856146
 mSetSq <- mSetSq[keep, ]
-NROW(mSetSq) #
+NROW(mSetSq)
 rm(detP)
 ```
 
+**6. Išmeskite genomines pozicijas (eilutes), neturinčias "CG" nukleotidų**
+**poros (CH) arba esančias šalia DNR polimorfizmų.**\
+Genominės pozicijos, neturinčios "CG" nukleotidų poros, buvo pašalintos,
+pasinaudojus *dropMethylationLoci()* funkcija.
+
 ```{r Task_6, message=FALSE, warning=FALSE, include=FALSE}
-####################################################################################################
-# 6.  Išmeskite genomines pozicijas (eilutes) neturinčias "CG" nukleotidų poros (CH) arba esančias
-#     šalia DNR polimorfizmų
-#     - tam naudokite funkciją dropMethylationLoci(), galite perskaityti jos help().
-####################################################################################################
-NROW(mSetSq) # 856146
+nrow_before <- NROW(mSetSq) # 856146
 mSetSq <- dropMethylationLoci(mSetSq, dropCH = TRUE)
-NROW(mSetSq) # 853368
+nrow_after <- NROW(mSetSq) # 853368
 ```
 
+Prieš panaudojant *dropMethylationLoci()* funkciją duomenų matrica turėjo
+**`r nrow_before`** eilutes. Atlikus genominių pozicijų, neturinčių "CG"
+nukleotidų poros, filtravimą, buvo paliktos **`r nrow_after`** matricos
+eilutės - **`r nrow_before - nrow_after`** eilutės buvo pašalintos.
+
+**7. Pašalinkite mėginius, kurių nurodyta lytis skiriasi nuo spėjamos lyties.**
+Straipsnyje aprašyto tyrimo metu buvo tiriamos tik moterys. Pasinaudojus
+*getSex()* funkcija, spėjančią žmogaus lytį, kita lytis nebuvo gauta - visiems
+žmonėms, kurių mėginiai buvo analizuojami, buvo nuspėta moteriška (female (F))
+lytis.
+
+```{r Task_7, message=FALSE, warning=FALSE, include=FALSE}
+estSex <- getSex(mSetSq, cutoff = -2)
+estSex$predictedSex == 'F'
+rm(estSex)
+```
+
+**8. Po duomenų paruošimo iš gauto objekto pasidarykite 3 atskirus objektus:**
+**pagrindinės modifikacijos įverčių matricos (getBeta()), informacijos apie**
+**pagrindinės matricos mėginius (stulpelius) (pData()) ir informacijos apie**
+**pagrindinės matricos pozicijas (eilutes) (getAnnotation()).**
+
 ```{r Task_8, message=FALSE, warning=FALSE, include=FALSE}
-####################################################################################################
-# 8.  Po duomenų paruošimo iš gauto objekto pasidarykite tris atskirus objektus:
-#     - pagrindinė modifikacijos įverčių matrica: getBeta()
-#     - informacija apie pagrindinės matricos mėginius (stulpelius): pData()
-#     - informacija apie pagrindinės matricos pozicijas (eilutes): getAnnotation()
-####################################################################################################
 beta <- getBeta(mSetSq)
 pData <- pData(mSetSq)
 annotation <- getAnnotation(mSetSq)
@@ -149,176 +155,94 @@ save(pData, file = "pData.Rdata")
 save(annotation, file = "annotation.Rdata")
 ```
 
-```{r Task_9, message=FALSE, warning=FALSE, include=FALSE}
-####################################################################################################
-# 9.  Savarankiškai parašykite kodą, atliekantį IAC išskirčių išmetimą.
-#     - Detalus sios proceduros aprasymas, net su kodo pavyzdziais, gali buti rastas cia:
-#     https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf)
-####################################################################################################
-```{r Preparations_Task_1, message=FALSE, warning=FALSE, include=FALSE}
+**9. Atlikite IAC išskirčių pašalinimą.**\
+Išskirtys pašalintos, remiantis [šiame straipnsyje](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf)) pateiktu procedūros aprašymu.
+
+```{r Task_9_1, message=FALSE, warning=FALSE, include=FALSE}
 load("beta.Rdata")
 dat <- beta
 
-IAC <- cor(dat, use="p")
-hist(IAC, sub = paste("Mean=", format(mean(IAC[upper.tri(IAC)]), digits=3)))
+IAC <- cor(dat, use = "p")
+hist(IAC, sub = paste("Mean=", format(mean(IAC[upper.tri(IAC)]), digits = 3)))
 ```
 
-It can be seen from the provided histogram that the average inter-array
-correlation (IAC), when no outlier samples are removed, is 0.985. In addition,
-the above histogram shows that there are two tails to the left and to the right
-side of the distribution which indicates that were might be some outliers.
+Sukurtoje histogramoje galima matyti, kad prieš atliekant išskirčių šalinimą,
+vidutinė IAC vertė yra lygi
+**`r format(mean(IAC[upper.tri(IAC)]), digits = 3)`**. Taip pat histogramoje
+matomos dvi "uodegos", esančios kairėje ir dešinėje reikšmių pasiskirstymo
+pusėse. Tai rodo, jog tarp turimų duomenų gali būti išskirčių.
 
-```{r}
+```{r Task_9_2, include=FALSE}
 meanIAC <- apply(IAC, 2, mean)
 sdCorr <- sd(meanIAC)
 numbersd <- (meanIAC - mean(meanIAC)) / sdCorr
 plot(numbersd)
-abline(h = -2) 
+abline(h = -2)
 ```
-It can be seen from the above scatter plot that there there are 6 outlier
-samples that should be removed. Outlier sample names:
 
-```{r echo=FALSE}
-sdout=-2
-outliers=dimnames(dat)[[2]][numbersd<sdout]
+Tokią pačią išvadą apie išskirtis galima padaryti ir išanalizavus
+pateiktą sklaidos grafiką (scatter plot). Grafike galima pastebėti,
+jog esama 6 mėginių, esančių žemiau -2 reikšmės ribos. Pasinaudojus R
+komandomis buvo nustatyti šių mėginių vardai:
+
+```{r Task_9_3, include=FALSE}
+sdout = -2
+outliers = dimnames(dat)[[2]][numbersd < sdout]
 outliers
 ```
-```{r}
-# Performing outlier removal:
-dat2 <- dat[, numbersd > sdout]
 
-IAC=cor(dat2,use="p")
-hist(IAC,sub=paste("Mean=",format(mean(IAC[upper.tri(IAC)]),digits=3)))
+Nustatyti mėginiai buvo pašalinti. Atlikus mėginių šalinimą toliau buvo
+tikrinama, ar duomenų rinkinyje liko išskirčių. Tas pats procesas buvo
+kartojamas tol, kol programa pateikdavo mėginių pavadinimus, kuriuose yra
+išskirčių.
 
-meanIAC=apply(IAC,2,mean)
-sdCorr=sd(meanIAC)
-numbersd=(meanIAC-mean(meanIAC))/sdCorr
+Atlikus 7 iteracijas programa nebepateikė mėginių, kuriuose yra išskirčių,
+pavadinimų bei sklaidos grafike nebeliko taškų, esančių žemiau -2 reikšmės
+ribos:
+
+```{r Task_9_4, include=FALSE}
+dat7 <- readRDS("dat7.Rds")
+numbersd <- readRDS("numbersd7.Rds")
+sdout <- readRDS("sdout7.Rds")
+
+dat8 <- dat7[, numbersd > sdout]
+saveRDS(dat8, file = "dat8.Rds")
+
+IAC <- cor(dat8, use = "p")
+hist(IAC, sub = paste("Mean=", format(mean(IAC[upper.tri(IAC)]), digits = 3)))
+
+meanIAC <- apply(IAC, 2, mean)
+sdCorr <- sd(meanIAC)
+numbersd <- (meanIAC - mean(meanIAC)) / sdCorr
 plot(numbersd)
-abline(h=-2)
+abline(h = -2)
 
-sdout=-2
-outliers=dimnames(dat2)[[2]][numbersd<sdout]
-outliers
-```
-
-```{r}
-dat3=dat2[,numbersd>sdout]
-IAC=cor(dat3,use="p")
-hist(IAC,sub=paste("Mean=",format(mean(IAC[upper.tri(IAC)]),digits=3)))
-
-meanIAC=apply(IAC,2,mean)
-sdCorr=sd(meanIAC)
-numbersd=(meanIAC-mean(meanIAC))/sdCorr
-plot(numbersd)
-abline(h=-2)
-
-sdout=-2
-outliers=dimnames(dat3)[[2]][numbersd<sdout]
-outliers
-```
-
-```{r}
-dat4=dat3[,numbersd>sdout]
-IAC=cor(dat4,use="p")
-hist(IAC,sub=paste("Mean=",format(mean(IAC[upper.tri(IAC)]),digits=3)))
-
-meanIAC=apply(IAC,2,mean)
-sdCorr=sd(meanIAC)
-numbersd=(meanIAC-mean(meanIAC))/sdCorr
-plot(numbersd)
-abline(h=-2)
-
-sdout=-2
-outliers=dimnames(dat4)[[2]][numbersd<sdout]
-outliers
-```
-
-```{r}
-dat5=dat4[,numbersd>sdout]
-IAC=cor(dat5,use="p")
-hist(IAC,sub=paste("Mean=",format(mean(IAC[upper.tri(IAC)]),digits=3)))
-
-meanIAC=apply(IAC,2,mean)
-sdCorr=sd(meanIAC)
-numbersd=(meanIAC-mean(meanIAC))/sdCorr
-plot(numbersd)
-abline(h=-2)
-
-sdout=-2
-outliers=dimnames(dat5)[[2]][numbersd<sdout]
-outliers
-```
-
-```{r}
-dat6=dat5[,numbersd>sdout]
-IAC=cor(dat6,use="p")
-hist(IAC,sub=paste("Mean=",format(mean(IAC[upper.tri(IAC)]),digits=3)))
-
-meanIAC=apply(IAC,2,mean)
-sdCorr=sd(meanIAC)
-numbersd=(meanIAC-mean(meanIAC))/sdCorr
-plot(numbersd)
-abline(h=-2)
-
-sdout=-2
-outliers=dimnames(dat6)[[2]][numbersd<sdout]
-outliers
-```
-
-```{r}
-dat7=dat6[,numbersd>sdout]
-IAC=cor(dat7,use="p")
-hist(IAC,sub=paste("Mean=",format(mean(IAC[upper.tri(IAC)]),digits=3)))
-
-meanIAC=apply(IAC,2,mean)
-sdCorr=sd(meanIAC)
-numbersd=(meanIAC-mean(meanIAC))/sdCorr
-plot(numbersd)
-abline(h=-2)
-
-sdout=-2
-outliers=dimnames(dat7)[[2]][numbersd<sdout]
-outliers
-```
-
-```{r}
-dat8=dat7[,numbersd>sdout]
-IAC=cor(dat8,use="p")
-hist(IAC,sub=paste("Mean=",format(mean(IAC[upper.tri(IAC)]),digits=3)))
-
-meanIAC=apply(IAC,2,mean)
-sdCorr=sd(meanIAC)
-numbersd=(meanIAC-mean(meanIAC))/sdCorr
-plot(numbersd)
-abline(h=-2)
-
-sdout=-2
-outliers=dimnames(dat8)[[2]][numbersd<sdout]
+sdout <- -2
+outliers <- dimnames(dat8)[[2]][numbersd < sdout]
 outliers
 
-library(cluster)
-cluster1=hclust(as.dist(1-IAC),method="average")
-plot(cluster1,cex=0.7,labels=dimnames(dat8)[[2]])
+# cluster1 <- hclust(as.dist(1 - IAC), method = "average")
+# plot(cluster1, cex=0.7, labels = dimnames(dat8)[[2]])
+
+saveRDS(numbersd, file = "numbersd8.Rds")
+saveRDS(sdout, file = "sdout8.Rds")
 ```
 
-After performing the same procedure of outlier identification and removal
-until no outliers were detected, the data set of 124 samples was reduced
-to 96 samples.
+Atlikus 7 iteracijas buvo pašalinti **`r 124 - dim(dat8)[2]`** mėginiai.
+Duomenų rinkinyje liko **`r dim(dat8)[2]`** mėginiai, neturintys išskirčių.
+
+**10. Atlikite bent vieną kokybės kontrolės žingsnį.**
+
 ```{r Task_10, message=FALSE, warning=FALSE, include=FALSE}
-####################################################################################################
-# 10. Atlikite bent vieną kokybės kontrolės žingsnį aptartą paskaitų metu, arba susigalvotą savo
-#     paties (žinoma galite atlikti ir daugiau nei vieną).
-####################################################################################################
 load("rgSet1.RData")
-qcReport(rgSet, pdf= "qcReport.pdf")
+qcReport(rgSet, pdf = "qcReport.pdf")
 rm(rgSet)
 ```
 
+**11. Išsisaugokite paruoštus duomenis.**
+
 ```{r Task_11, message=FALSE, warning=FALSE, include=FALSE}
-####################################################################################################
-# 11. Išsisaugokite paruoštus duomenis (su saveRDS()), juos naudosite kitose užduotyse
-####################################################################################################
-# load("beta.Rdata")
-# load("pData.Rdata")
-# load("annotation.Rdata")
+load("beta.Rdata")
+load("pData.Rdata")
+load("annotation.Rdata")
 ```
