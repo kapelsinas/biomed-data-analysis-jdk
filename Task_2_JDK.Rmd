@@ -234,19 +234,18 @@ Duomenų rinkinyje liko **`r dim(dat8)[2]`** mėginiai, neturintys išskirčių.
 **10. Atlikite bent vieną kokybės kontrolės žingsnį.**
 
 ```{r Task_10, message=FALSE, warning=FALSE, include=FALSE}
-load("dat8.Rdata")
-load("pData.Rdata")
-load("annotation.Rdata")
+load("/home/enjoy/Desktop/pData.Rdata")
+load("/home/enjoy/Desktop/annotation.Rdata")
 
-beta_clean <- dat8
+beta_clean <- readRDS("/home/enjoy/Desktop/dat8.Rds")
 pDat <- pData
 annot <- annotation
 
 col_Beta <- colnames(beta_clean)
 row_Beta <- rownames(beta_clean)
 
-pDatf <- as.data.frame(pDat)
-annotf <- as.data.frame(annot)
+pDatf <- as.data.frame(pData)
+annotf <- as.data.frame(annotation)
 
 clean_pDat <- pDatf[(rownames(pDatf) %in% c(colnames(beta_clean))),]
 save(clean_pDat, file = "clean_pDat.Rdata")
