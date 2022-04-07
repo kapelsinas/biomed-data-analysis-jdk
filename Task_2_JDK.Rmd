@@ -63,7 +63,7 @@ badPValues <- colMeans(detP) > 0.01
 keep <- colMeans(detP) < 0.01
 ```
 
-**Patikrinus, ar yra p-verčių didesnių už 0.01, tokių verčių nebuvo aptikta.**\
+Patikrinus, ar yra p-verčių didesnių už 0.01, tokių verčių nebuvo aptikta.\
 **Iš RGChannelSet objekto išmeskite visus mėginius (stulpelius), kurie turi**
 **daugiau nei 1% "blogų" *detection p* reikšmių.**
 
@@ -156,7 +156,7 @@ save(annotation, file = "annotation.Rdata")
 ```
 
 **9. Atlikite IAC išskirčių pašalinimą.**\
-Išskirtys pašalintos, remiantis [šiame straipnsyje](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf)) pateiktu procedūros aprašymu.
+Išskirtys pašalintos, remiantis [šiame dokumente](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf) pateiktu procedūros aprašymu.
 
 ```{r Task_9_1, message=FALSE, warning=FALSE, include=FALSE}
 load("beta.Rdata")
