@@ -234,12 +234,12 @@ Duomenų rinkinyje liko **`r dim(dat8)[2]`** mėginiai, neturintys išskirčių.
 **10. Atlikite bent vieną kokybės kontrolės žingsnį.**
 
 ```{r Task_10, message=FALSE, warning=FALSE, include=FALSE}
+#load pData and annottation 
 load("/home/enjoy/Desktop/pData.Rdata")
 load("/home/enjoy/Desktop/annotation.Rdata")
 
+#load beta
 beta_clean <- readRDS("/home/enjoy/Desktop/dat8.Rds")
-pDat <- pData
-annot <- annotation
 
 col_Beta <- colnames(beta_clean)
 row_Beta <- rownames(beta_clean)
