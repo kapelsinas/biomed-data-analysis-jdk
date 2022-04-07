@@ -234,6 +234,8 @@ Duomenų rinkinyje liko **`r dim(dat8)[2]`** mėginiai, neturintys išskirčių.
 **10. Atlikite bent vieną kokybės kontrolės žingsnį.**
 
 ```{r Task_10, message=FALSE, warning=FALSE, include=FALSE}
+rm(list = ls(all.names = TRUE))
+gc()
 #load pData and annottation 
 load("/home/enjoy/Desktop/pData.Rdata")
 load("/home/enjoy/Desktop/annotation.Rdata")
@@ -246,36 +248,49 @@ row_Beta <- rownames(beta_clean)
 
 pDatf <- as.data.frame(pData)
 annotf <- as.data.frame(annotation)
+beta_cleandf <- as.data.frame(beta_clean)
 
 clean_pDat <- pDatf[(rownames(pDatf) %in% c(colnames(beta_clean))),]
 save(clean_pDat, file = "clean_pDat.Rdata")
 
 # unique(annotf$Relation_to_Island) # OpenSea" "Island"  "N_Shore" "N_Shelf" "S_Shore" "S_Shelf"
 openSea <- annotf[annotf$Relation_to_Island == "OpenSea",]
-b_openSea <- rowMeans(beta_clean[rownames(openSea), ])
-
-beta_clean[rownames(openSea), ]
-
-rownames(openSea)
-nrow(beta_clean)
+b_openSea <- rowMeans(beta_cleandf[rownames(openSea), ])
 
 island <- annotf[annotf$Relation_to_Island == "Island",]
-b_island <- rowMeans(beta_clean[rownames(island),])
+b_island <- rowMeans(beta_cleandf[rownames(island),])
 
 n_shore <- annotf[annotf$Relation_to_Island == "N_Shore",]
-b_n_shore <- rowMeans(beta_clean[rownames(n_shore),])
+b_n_shore <- rowMeans(beta_cleandf[rownames(n_shore),])
 
 s_shore <- annotf[annotf$Relation_to_Island == "S_Shore",]
-b_s_shore <- rowMeans(beta_clean[rownames(s_shore),])
+b_s_shore <- rowMeans(beta_cleandf[rownames(s_shore),])
 
 n_shelf <- annotf[annotf$Relation_to_Island == "N_Shelf",]
-b_n_shelf <- rowMeans(beta_clean[rownames(n_shelf),])
+b_n_shelf <- rowMeans(beta_cleandf[rownames(n_shelf),])
 
 s_shelf <- annotf[annotf$Relation_to_Island == "S_Shelf",]
-b_s_shelf <- rowMeans(beta_clean[rownames(s_shelf),])
+b_s_shelf <- rowMeans(beta_cleandf[rownames(s_shelf),])
 
 
+Beta_values <- c(b_island,b_openSea,b_n_shore,b_s_shore ,b_n_shelf, b_s_shelf)
 
+saveRDS(Beta_values, file = "beta_values.rds")
+name <- c(rep("Island",length(b_island)), rep("Opensea",length(b_openSea)),
+rep("s_shore",length(b_s_shore)),rep("n_shore",length(b_n_shore)), rep("n_shelf",length(b_n_shelf)), rep("s_shelf", length(b_s_shelf)))
+
+saveRDS(name, file = "name.rds")
+
+df <- data.frame(Beta_values, name)
+
+saveRDS(df, "df.rds")
+
+library("ggplot2")
+
+qc_plot <- ggplot(df, aes(x = Beta_values, colour = name)) + geom_density(lwd = 1.2, linetype = 1) + xlim(-0.05,1.0) + xlab("Beta reikšmė") + ylab("Tankis") + 
+ggtitle("Metilinimo lygio pasiskirstymas")
+
+qc_plot
 
 ```
 
