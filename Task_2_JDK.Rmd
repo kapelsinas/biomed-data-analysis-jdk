@@ -252,7 +252,12 @@ save(clean_pDat, file = "clean_pDat.Rdata")
 
 # unique(annotf$Relation_to_Island) # OpenSea" "Island"  "N_Shore" "N_Shelf" "S_Shore" "S_Shelf"
 openSea <- annotf[annotf$Relation_to_Island == "OpenSea",]
-b_openSea <- rowMeans(beta_clean[rownames(openSea),])
+b_openSea <- rowMeans(beta_clean[rownames(openSea), ])
+
+beta_clean[rownames(openSea), ]
+
+rownames(openSea)
+nrow(beta_clean)
 
 island <- annotf[annotf$Relation_to_Island == "Island",]
 b_island <- rowMeans(beta_clean[rownames(island),])
@@ -268,6 +273,9 @@ b_n_shelf <- rowMeans(beta_clean[rownames(n_shelf),])
 
 s_shelf <- annotf[annotf$Relation_to_Island == "S_Shelf",]
 b_s_shelf <- rowMeans(beta_clean[rownames(s_shelf),])
+
+
+
 
 ```
 
