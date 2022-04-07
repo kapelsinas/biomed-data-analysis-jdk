@@ -63,7 +63,7 @@ badPValues <- colMeans(detP) > 0.01
 keep <- colMeans(detP) < 0.01
 ```
 
-**Patikrinus, ar yra p-verčių didesnių už 0.01, tokių verčių nebuvo aptikta.**\
+Patikrinus, ar yra p-verčių didesnių už 0.01, tokių verčių nebuvo aptikta.\
 **Iš RGChannelSet objekto išmeskite visus mėginius (stulpelius), kurie turi**
 **daugiau nei 1% "blogų" *detection p* reikšmių.**
 
@@ -156,7 +156,7 @@ save(annotation, file = "annotation.Rdata")
 ```
 
 **9. Atlikite IAC išskirčių pašalinimą.**\
-Išskirtys pašalintos, remiantis [šiame straipnsyje](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf)) pateiktu procedūros aprašymu.
+Išskirtys pašalintos, remiantis [šiame dokumente](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf) pateiktu procedūros aprašymu.
 
 ```{r Task_9_1, message=FALSE, warning=FALSE, include=FALSE}
 load("beta.Rdata")
@@ -234,9 +234,42 @@ Duomenų rinkinyje liko **`r dim(dat8)[2]`** mėginiai, neturintys išskirčių.
 **10. Atlikite bent vieną kokybės kontrolės žingsnį.**
 
 ```{r Task_10, message=FALSE, warning=FALSE, include=FALSE}
-load("rgSet1.RData")
-qcReport(rgSet, pdf = "qcReport.pdf")
-rm(rgSet)
+load("dat8.Rdata")
+load("pData.Rdata")
+load("annotation.Rdata")
+
+beta_clean <- dat8
+pDat <- pData
+annot <- annotation
+
+col_Beta <- colnames(beta_clean)
+row_Beta <- rownames(beta_clean)
+
+pDatf <- as.data.frame(pDat)
+annotf <- as.data.frame(annot)
+
+clean_pDat <- pDatf[(rownames(pDatf) %in% c(colnames(beta_clean))),]
+save(clean_pDat, file = "clean_pDat.Rdata")
+
+# unique(annotf$Relation_to_Island) # OpenSea" "Island"  "N_Shore" "N_Shelf" "S_Shore" "S_Shelf"
+openSea <- annotf[annotf$Relation_to_Island == "OpenSea",]
+b_openSea <- rowMeans(beta_clean[rownames(openSea),])
+
+island <- annotf[annotf$Relation_to_Island == "Island",]
+b_island <- rowMeans(beta_clean[rownames(island),])
+
+n_shore <- annotf[annotf$Relation_to_Island == "N_Shore",]
+b_n_shore <- rowMeans(beta_clean[rownames(n_shore),])
+
+s_shore <- annotf[annotf$Relation_to_Island == "S_Shore",]
+b_s_shore <- rowMeans(beta_clean[rownames(s_shore),])
+
+n_shelf <- annotf[annotf$Relation_to_Island == "N_Shelf",]
+b_n_shelf <- rowMeans(beta_clean[rownames(n_shelf),])
+
+s_shelf <- annotf[annotf$Relation_to_Island == "S_Shelf",]
+b_s_shelf <- rowMeans(beta_clean[rownames(s_shelf),])
+
 ```
 
 **11. Išsisaugokite paruoštus duomenis.**
