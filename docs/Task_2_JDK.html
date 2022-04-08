@@ -14,7 +14,7 @@
 
 <title>Practical No. 2</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.13/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -61,6 +61,7 @@ if (window.hljs) {
 
 
 
+
 <style type = "text/css">
 .main-container {
   max-width: 940px;
@@ -81,6 +82,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -233,7 +237,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -267,24 +271,160 @@ $(document).ready(function () {
 </div>
 
 
-<div id="r-markdown" class="section level2">
-<h2>R Markdown</h2>
-<p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>.</p>
-<p>When you click the <strong>Knit</strong> button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
-<pre class="r"><code>summary(cars)</code></pre>
-<pre><code>##      speed           dist    
-##  Min.   : 4.0   Min.   :  2  
-##  1st Qu.:12.0   1st Qu.: 26  
-##  Median :15.0   Median : 36  
-##  Mean   :15.4   Mean   : 43  
-##  3rd Qu.:19.0   3rd Qu.: 56  
-##  Max.   :25.0   Max.   :120</code></pre>
+<div id="duomenų-paruošimas" class="section level1">
+<h1>Duomenų paruošimas</h1>
+<div id="duomenų-paruošimo-žingsniai" class="section level2">
+<h2>Duomenų paruošimo žingsniai</h2>
+<p><strong>1. Pasiruoškite sau paskirtus sample-key failus (apvalydami reikšmes).</strong><br />
+Pateiktoje <em>sample-key</em> lentelėje nebuvo aptikta anotacijos, gramatikos klaidų. Stulpelių pavadinimai buvo pateikti mažosiomis raidėmis, todėl jie nebuvo koreguojami. Taip pat buvo tikrinami skaitinės informacijos rėžiai, tačiau visa informacija buvo pateikta korektiškai ir teisingai, todėl papildomos modifikacijos nebuvo atliekamos.</p>
+<p><strong>2. Nuskaitykite parsisiųstus idat failus į “RGChannelSet” tipo objektą.</strong><br />
+Idat failų nuskaitymui buvo sėkmingai panaudota <em>read.metharray.exp()</em> funkcija iš R <em>minfi</em> bibliotekos, kuri buvo įkelta prieš atliekant duomenų valymą (R programos Preparations bloke).</p>
+<pre class="r"><code>rgSet &lt;- read.metharray.exp(base = &quot;IDATS&quot;)</code></pre>
+<p><strong>3. Gaukite “detection p-value” kiekvienam DNR modifikacijos įverčiui.</strong><br />
+<strong><em>Detection p-value</em></strong> matrica kiekvienam DNR modifikacijos įverčiui gauta, naudojant <em>detectionP()</em> funkciją iš <em>minfi</em> bibliotekos.</p>
+<p>Patikrinus, ar yra p-verčių didesnių už 0.01, tokių verčių nebuvo aptikta.<br />
+<strong>Iš RGChannelSet objekto išmeskite visus mėginius (stulpelius), kurie turi</strong> <strong>daugiau nei 1% “blogų” <em>detection p</em> reikšmių.</strong></p>
+<pre class="r"><code>rgSet &lt;- rgSet[, keep]
+data &lt;- data[keep,]
+detP &lt;- detP[, keep]
+NROW(rgSet)</code></pre>
+<pre><code>## [1] 1051815</code></pre>
+<p><strong>4. Normalizuokite savo duomenis, naudojant preprocessSWAN(),</strong> <strong>preprocessFunnorm() arba preproccessIllumina() funkcijas iš <em>minfi</em> </strong> <strong>bibliotekos.</strong><br />
+Duomenims normalizuoti buvo pasirinkta <em>preprocessFunnorm()</em> funkcija, nes ji buvo naudota <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7607658/">straipsnyje</a> aprašyto tyrimo metu. Atliekant Biomedicininės duomenų analizės užduotis yra siekiama kuo tiksliau atkartoti šiame straipsnyje aprašyto tyrimo metu atliktą statistinę gautų duomenų analizę.</p>
+<pre class="r"><code>mSetSq &lt;- preprocessFunnorm(rgSet)
+mSetRaw &lt;- preprocessRaw(rgSet)</code></pre>
+<p><strong>5. Išmeskite visas genomines pozicijas (eilutes), kurios turi daugiau nei 1%</strong> <strong>“blogų” <em>detection p</em> reikšmių.</strong></p>
+<pre class="r"><code># ensure probes are in the same order in the mSetSq and detP objects:
+detP &lt;- detP[match(featureNames(mSetSq), rownames(detP)), ]
+
+# remove any probes that have failed in one or more samples:
+keep &lt;- rowSums(detP &lt; 0.01) == ncol(mSetSq)
+NROW(mSetSq)
+table(keep)
+##  keep
+##  FALSE   TRUE
+##  9713    856146
+mSetSq &lt;- mSetSq[keep, ]
+NROW(mSetSq)</code></pre>
+<p><strong>6. Išmeskite genomines pozicijas (eilutes), neturinčias “CG” nukleotidų</strong> <strong>poros (CH) arba esančias šalia DNR polimorfizmų.</strong><br />
+Genominės pozicijos, neturinčios “CG” nukleotidų poros, buvo pašalintos, pasinaudojus <em>dropMethylationLoci()</em> funkcija.</p>
+<p>Prieš panaudojant <em>dropMethylationLoci()</em> funkciją duomenų matrica turėjo <strong>865859</strong> eilutes. Atlikus genominių pozicijų, neturinčių “CG” nukleotidų poros, filtravimą, buvo paliktos <strong>862927</strong> matricos eilutės - <strong>2932</strong> eilutės buvo pašalintos.</p>
+<p><strong>7. Pašalinkite mėginius, kurių nurodyta lytis skiriasi nuo spėjamos lyties.</strong> Straipsnyje aprašyto tyrimo metu buvo tiriamos tik moterys. Pasinaudojus <em>getSex()</em> funkcija, spėjančią žmogaus lytį, kita lytis nebuvo gauta - visiems žmonėms, kurių mėginiai buvo analizuojami, buvo nuspėta moteriška (female (F)) lytis.</p>
+<pre class="r"><code>estSex &lt;- getSex(mSetSq, cutoff = -2)
+estSex$predictedSex == &#39;F&#39;</code></pre>
+<pre><code>##   [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+##  [16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+##  [31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+##  [46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+##  [61] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+##  [76] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+##  [91] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+## [106] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+## [121] TRUE TRUE TRUE TRUE</code></pre>
+<p><strong>8. Po duomenų paruošimo iš gauto objekto pasidarykite 3 atskirus objektus:</strong> <strong>pagrindinės modifikacijos įverčių matricos (getBeta()), informacijos apie</strong> <strong>pagrindinės matricos mėginius (stulpelius) (pData()) ir informacijos apie</strong> <strong>pagrindinės matricos pozicijas (eilutes) (getAnnotation()).</strong></p>
+<pre class="r"><code>beta &lt;- getBeta(mSetSq)
+pData &lt;- pData(mSetSq)
+annotation &lt;- getAnnotation(mSetSq)
+save(beta, file = &quot;beta.Rdata&quot;)
+save(pData, file = &quot;pData.Rdata&quot;)
+save(annotation, file = &quot;annotation.Rdata&quot;)</code></pre>
+<p><strong>9. Atlikite IAC išskirčių pašalinimą.</strong><br />
+Išskirtys pašalintos, remiantis <a href="https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf">šiame dokumente</a> pateiktu procedūros aprašymu.</p>
+<pre class="r"><code># # load(&quot;beta.Rdata&quot;)
+dat &lt;- beta
+
+IAC &lt;- cor(dat, use = &quot;p&quot;)
+hist(IAC, sub = paste(&quot;Mean=&quot;, format(mean(IAC[upper.tri(IAC)]), digits = 3)))</code></pre>
+<p><img src="Task_2_JDK_files/figure-html/Task_9_1-1.png" width="672" /></p>
+<p>Sukurtoje histogramoje galima matyti, kad prieš atliekant išskirčių šalinimą, vidutinė IAC vertė yra lygi <strong>0.984</strong>. Taip pat histogramoje matomos dvi “uodegos”, esančios kairėje ir dešinėje reikšmių pasiskirstymo pusėse. Tai rodo, jog tarp turimų duomenų gali būti išskirčių.</p>
+<pre class="r"><code>meanIAC &lt;- apply(IAC, 2, mean)
+sdCorr &lt;- sd(meanIAC)
+numbersd &lt;- (meanIAC - mean(meanIAC)) / sdCorr
+plot(numbersd)
+abline(h = -2)</code></pre>
+<p><img src="Task_2_JDK_files/figure-html/Task_9_2-1.png" width="672" /></p>
+<p>Tokią pačią išvadą apie išskirtis galima padaryti ir išanalizavus pateiktą sklaidos grafiką (scatter plot). Grafike galima pastebėti, jog esama 6 mėginių, esančių žemiau -2 reikšmės ribos. Pasinaudojus R komandomis buvo nustatyti šių mėginių vardai:</p>
+<pre class="r"><code>sdout = -2
+outliers = dimnames(dat)[[2]][numbersd &lt; sdout]
+outliers</code></pre>
+<pre><code>## [1] &quot;GSM4223839_202135260006_R04C01&quot; &quot;GSM4223859_202135260109_R08C01&quot;
+## [3] &quot;GSM4223887_202135260065_R03C01&quot; &quot;GSM4223895_202081130066_R02C01&quot;
+## [5] &quot;GSM4223901_202081130066_R08C01&quot; &quot;GSM4223917_202128330197_R08C01&quot;</code></pre>
+<p>Nustatyti mėginiai buvo pašalinti. Atlikus mėginių šalinimą toliau buvo tikrinama, ar duomenų rinkinyje liko išskirčių. Tas pats procesas buvo kartojamas tol, kol programa pateikdavo mėginių pavadinimus, kuriuose yra išskirčių.</p>
+<p>Atlikus 7 iteracijas programa nebepateikė mėginių, kuriuose yra išskirčių, pavadinimų bei sklaidos grafike nebeliko taškų, esančių žemiau -2 reikšmės ribos:</p>
+<pre class="r"><code>IAC &lt;- cor(dat8, use = &quot;p&quot;)
+hist(IAC, sub = paste(&quot;Mean=&quot;, format(mean(IAC[upper.tri(IAC)]), digits = 3)))</code></pre>
+<p><img src="Task_2_JDK_files/figure-html/Task_9_4_plot-1.png" width="672" /></p>
+<pre class="r"><code>meanIAC &lt;- apply(IAC, 2, mean)
+sdCorr &lt;- sd(meanIAC)
+numbersd &lt;- (meanIAC - mean(meanIAC)) / sdCorr
+plot(numbersd)
+abline(h = -2)</code></pre>
+<p><img src="Task_2_JDK_files/figure-html/Task_9_4_plot-2.png" width="672" /></p>
+<p>Atlikus 7 iteracijas buvo pašalinti <strong>28</strong> mėginiai. Duomenų rinkinyje liko <strong>96</strong> mėginiai, neturintys išskirčių.</p>
+<p><strong>10. Atlikite bent vieną kokybės kontrolės žingsnį.</strong></p>
+<pre class="r"><code># rm(list = ls(all.names = TRUE))
+
+# # Įkeliami pData ir annotation objektai: 
+# load(&quot;pData.Rdata&quot;)
+# load(&quot;annotation.Rdata&quot;)
+
+# Nuskaitomas beta duomenų rinkinys su pašalintomis išskirtimis:
+beta_clean &lt;- readRDS(&quot;dat8.Rds&quot;)
+
+pDatf &lt;- as.data.frame(pData)
+annotf &lt;- as.data.frame(annotation)
+beta_cleandf &lt;- as.data.frame(beta_clean)
+
+clean_pDat &lt;- pDatf[(rownames(pDatf) %in% c(colnames(beta_clean))), ]
+save(clean_pDat, file = &quot;clean_pDat.Rdata&quot;)
+
+openSea &lt;- annotf[annotf$Relation_to_Island == &quot;OpenSea&quot;, ]
+b_openSea &lt;- rowMeans(beta_cleandf[rownames(openSea), ])
+
+island &lt;- annotf[annotf$Relation_to_Island == &quot;Island&quot;, ]
+b_island &lt;- rowMeans(beta_cleandf[rownames(island), ])
+
+n_shore &lt;- annotf[annotf$Relation_to_Island == &quot;N_Shore&quot;, ]
+b_n_shore &lt;- rowMeans(beta_cleandf[rownames(n_shore), ])
+
+s_shore &lt;- annotf[annotf$Relation_to_Island == &quot;S_Shore&quot;, ]
+b_s_shore &lt;- rowMeans(beta_cleandf[rownames(s_shore), ])
+
+n_shelf &lt;- annotf[annotf$Relation_to_Island == &quot;N_Shelf&quot;, ]
+b_n_shelf &lt;- rowMeans(beta_cleandf[rownames(n_shelf), ])
+
+s_shelf &lt;- annotf[annotf$Relation_to_Island == &quot;S_Shelf&quot;, ]
+b_s_shelf &lt;- rowMeans(beta_cleandf[rownames(s_shelf), ])
+
+betas_by_group &lt;- c(b_island, b_openSea, b_n_shore,
+                    b_s_shore,b_n_shelf, b_s_shelf)
+
+cpg_regions &lt;- c(rep(&quot;Island&quot;, length(b_island)),
+                 rep(&quot;OpenSea&quot;, length(b_openSea)),
+                 rep(&quot;s_shore&quot;, length(b_s_shore)),
+                 rep(&quot;n_shore&quot;, length(b_n_shore)),
+                 rep(&quot;n_shelf&quot;, length(b_n_shelf)),
+                 rep(&quot;s_shelf&quot;, length(b_s_shelf)))
+
+df &lt;- data.frame(betas_by_group, cpg_regions)
+saveRDS(betas_by_group, file = &quot;betas_by_group.Rds&quot;)
+saveRDS(cpg_regions, file = &quot;cpg_regions.Rds&quot;)
+saveRDS(df, &quot;df.Rds&quot;)</code></pre>
+<pre class="r"><code>qc_plot &lt;- ggplot(df, aes(x = betas_by_group, colour = cpg_regions)) +
+            labs(title = &quot;Metilintos DNR pasiskirstymas&quot;,
+                 x = NULL, y = &quot;Tankis&quot;) +
+            geom_density(lwd = 0.8, linetype = 1) +
+            xlim(-0.05, 1) +
+            theme(plot.title = element_text(hjust = 0.5)) +
+            scale_colour_discrete(name = &quot;CpG regionai&quot;)
+qc_plot + theme(legend.position = &quot;bottom&quot;)</code></pre>
+<p><img src="Task_2_JDK_files/figure-html/Task_10_plot-1.png" width="672" /></p>
+<p><strong>11. Užsikrauname išsaugotus paruoštus duomenis.</strong></p>
+<pre class="r"><code># load(&quot;beta.Rdata&quot;)
+# load(&quot;pData.Rdata&quot;)
+# load(&quot;annotation.Rdata&quot;)</code></pre>
 </div>
-<div id="including-plots" class="section level2">
-<h2>Including Plots</h2>
-<p>You can also embed plots, for example:</p>
-<p><img src="Task_2_JDK_files/figure-html/pressure-1.png" width="672" /></p>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
 </div>
 
 

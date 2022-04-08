@@ -43,9 +43,8 @@ Idat failų nuskaitymui buvo sėkmingai panaudota *read.metharray.exp()* funkcij
 iš R *minfi* bibliotekos, kuri buvo įkelta prieš atliekant duomenų valymą
 (R programos Preparations bloke).
 
-```{r Task_2, message=FALSE, warning=FALSE, include=FALSE}
+```{r Task_2, message=FALSE, warning=FALSE, include=TRUE}
 rgSet <- read.metharray.exp(base = "IDATS")
-save(rgSet, file = "rgSet0.RData")
 ```
 
 **3. Gaukite "detection p-value" kiekvienam DNR modifikacijos įverčiui.**\
@@ -54,7 +53,6 @@ naudojant *detectionP()* funkciją iš *minfi* bibliotekos.
 
 ```{r Task_3_1, message=FALSE, warning=FALSE, include=FALSE}
 detP <- detectionP(rgSet)
-save(detP, file = "detP0.Rdata")
 NROW(rgSet)
 
 # Visos vertės, kurių p-vertė > 0.01, laikomos "blogomis":
@@ -68,14 +66,11 @@ Patikrinus, ar yra p-verčių didesnių už 0.01, tokių verčių nebuvo aptikta
 **Iš RGChannelSet objekto išmeskite visus mėginius (stulpelius), kurie turi**
 **daugiau nei 1% "blogų" *detection p* reikšmių.**
 
-```{r Task_3_2, message=FALSE, warning=FALSE, include=FALSE}
+```{r Task_3_2, message=FALSE, warning=FALSE, include=TRUE}
 rgSet <- rgSet[, keep]
 data <- data[keep,]
 detP <- detP[, keep]
-NROW(rgSet) #
-save(rgSet, file = "rgSet1.RData")
-save(detP, file = "detP1.Rdata")
-save(data, file ="data0.RData")
+NROW(rgSet)
 ```
 
 **4. Normalizuokite savo duomenis, naudojant preprocessSWAN(),**
@@ -87,20 +82,17 @@ aprašyto tyrimo metu. Atliekant Biomedicininės duomenų analizės užduotis yr
 siekiama kuo tiksliau atkartoti šiame straipsnyje aprašyto tyrimo metu atliktą
 statistinę gautų duomenų analizę.
 
-```{r Task_4, message=FALSE, warning=FALSE, include=FALSE}
+```{r Task_4, message=FALSE, warning=FALSE, include=TRUE}
 mSetSq <- preprocessFunnorm(rgSet)
-save(mSetSq, file = "mSetSq0.RData")
 mSetRaw <- preprocessRaw(rgSet)
-save(mSetRaw, file = "mSetRaw0.RData")
 ```
 
 **5. Išmeskite visas genomines pozicijas (eilutes), kurios turi daugiau nei 1%**
 **"blogų" *detection p* reikšmių.**
 
-```{r Task_5, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+```{r Task_5, eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
 # ensure probes are in the same order in the mSetSq and detP objects:
 detP <- detP[match(featureNames(mSetSq), rownames(detP)), ]
-save(detP, file = "detP1.Rdata")
 
 # remove any probes that have failed in one or more samples:
 keep <- rowSums(detP < 0.01) == ncol(mSetSq)
@@ -111,7 +103,6 @@ table(keep)
 ##  9713    856146
 mSetSq <- mSetSq[keep, ]
 NROW(mSetSq)
-rm(detP)
 ```
 
 **6. Išmeskite genomines pozicijas (eilutes), neturinčias "CG" nukleotidų**
@@ -136,10 +127,9 @@ Straipsnyje aprašyto tyrimo metu buvo tiriamos tik moterys. Pasinaudojus
 žmonėms, kurių mėginiai buvo analizuojami, buvo nuspėta moteriška (female (F))
 lytis.
 
-```{r Task_7, message=FALSE, warning=FALSE, include=FALSE}
+```{r Task_7, message=FALSE, warning=FALSE, include=TRUE}
 estSex <- getSex(mSetSq, cutoff = -2)
 estSex$predictedSex == 'F'
-rm(estSex)
 ```
 
 **8. Po duomenų paruošimo iš gauto objekto pasidarykite 3 atskirus objektus:**
@@ -147,7 +137,7 @@ rm(estSex)
 **pagrindinės matricos mėginius (stulpelius) (pData()) ir informacijos apie**
 **pagrindinės matricos pozicijas (eilutes) (getAnnotation()).**
 
-```{r Task_8, message=FALSE, warning=FALSE, include=FALSE}
+```{r Task_8, message=FALSE, warning=FALSE, include=TRUE}
 beta <- getBeta(mSetSq)
 pData <- pData(mSetSq)
 annotation <- getAnnotation(mSetSq)
@@ -159,8 +149,8 @@ save(annotation, file = "annotation.Rdata")
 **9. Atlikite IAC išskirčių pašalinimą.**\
 Išskirtys pašalintos, remiantis [šiame dokumente](https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/HumanBrainTranscriptome/Identification%20and%20Removal%20of%20Outlier%20Samples.pdf) pateiktu procedūros aprašymu.
 
-```{r Task_9_1, message=FALSE, warning=FALSE, include=FALSE}
-load("beta.Rdata")
+```{r Task_9_1, message=FALSE, warning=FALSE, include=TRUE}
+# # load("beta.Rdata")
 dat <- beta
 
 IAC <- cor(dat, use = "p")
@@ -173,7 +163,7 @@ vidutinė IAC vertė yra lygi
 matomos dvi "uodegos", esančios kairėje ir dešinėje reikšmių pasiskirstymo
 pusėse. Tai rodo, jog tarp turimų duomenų gali būti išskirčių.
 
-```{r Task_9_2, include=FALSE}
+```{r Task_9_2, message=FALSE, warning=FALSE, include=TRUE}
 meanIAC <- apply(IAC, 2, mean)
 sdCorr <- sd(meanIAC)
 numbersd <- (meanIAC - mean(meanIAC)) / sdCorr
@@ -186,7 +176,7 @@ pateiktą sklaidos grafiką (scatter plot). Grafike galima pastebėti,
 jog esama 6 mėginių, esančių žemiau -2 reikšmės ribos. Pasinaudojus R
 komandomis buvo nustatyti šių mėginių vardai:
 
-```{r Task_9_3, include=FALSE}
+```{r Task_9_3, message=FALSE, warning=FALSE, include=TRUE}
 sdout = -2
 outliers = dimnames(dat)[[2]][numbersd < sdout]
 outliers
@@ -201,14 +191,16 @@ Atlikus 7 iteracijas programa nebepateikė mėginių, kuriuose yra išskirčių,
 pavadinimų bei sklaidos grafike nebeliko taškų, esančių žemiau -2 reikšmės
 ribos:
 
-```{r Task_9_4, include=FALSE}
-dat7 <- readRDS("dat7.Rds")
-numbersd <- readRDS("numbersd7.Rds")
-sdout <- readRDS("sdout7.Rds")
+```{r Task_9_4_0, message=FALSE, warning=FALSE, include=FALSE}
+# dat7 <- readRDS("dat7.Rds")
+# numbersd <- readRDS("numbersd7.Rds")
+# sdout <- readRDS("sdout7.Rds")
+# 
+# dat8 <- dat7[, numbersd > sdout]
+# saveRDS(dat8, file = "dat8.Rds")
+dat8 <-readRDS("dat8.Rds")
 
-dat8 <- dat7[, numbersd > sdout]
-saveRDS(dat8, file = "dat8.Rds")
-
+```{r Task_9_4_plot, message=FALSE, warning=FALSE, include=TRUE}
 IAC <- cor(dat8, use = "p")
 hist(IAC, sub = paste("Mean=", format(mean(IAC[upper.tri(IAC)]), digits = 3)))
 
@@ -217,7 +209,8 @@ sdCorr <- sd(meanIAC)
 numbersd <- (meanIAC - mean(meanIAC)) / sdCorr
 plot(numbersd)
 abline(h = -2)
-
+```
+```{r Task_9_4_1, message=FALSE, warning=FALSE, include=FALSE}
 sdout <- -2
 outliers <- dimnames(dat8)[[2]][numbersd < sdout]
 outliers
@@ -225,8 +218,8 @@ outliers
 # cluster1 <- hclust(as.dist(1 - IAC), method = "average")
 # plot(cluster1, cex=0.7, labels = dimnames(dat8)[[2]])
 
-saveRDS(numbersd, file = "numbersd8.Rds")
-saveRDS(sdout, file = "sdout8.Rds")
+# saveRDS(numbersd, file = "numbersd8.Rds")
+# saveRDS(sdout, file = "sdout8.Rds")
 ```
 
 Atlikus 7 iteracijas buvo pašalinti **`r 124 - dim(dat8)[2]`** mėginiai.
@@ -234,16 +227,15 @@ Duomenų rinkinyje liko **`r dim(dat8)[2]`** mėginiai, neturintys išskirčių.
 
 **10. Atlikite bent vieną kokybės kontrolės žingsnį.**
 
-```{r Task_10, message=FALSE, warning=FALSE, include=FALSE}
-rm(list = ls(all.names = TRUE))
-gc()
+```{r Task_10, message=FALSE, warning=FALSE, include=TRUE}
+# rm(list = ls(all.names = TRUE))
 
-# Įkeliami pData ir annotation objektai: 
-load("pData.Rdata")
-load("annotation.Rdata")
+# # Įkeliami pData ir annotation objektai: 
+# load("pData.Rdata")
+# load("annotation.Rdata")
 
 # Nuskaitomas beta duomenų rinkinys su pašalintomis išskirtimis:
-beta_clean <- readRDS("/home/enjoy/Desktop/dat8.Rds")
+beta_clean <- readRDS("dat8.Rds")
 
 pDatf <- as.data.frame(pData)
 annotf <- as.data.frame(annotation)
@@ -281,7 +273,11 @@ cpg_regions <- c(rep("Island", length(b_island)),
                  rep("s_shelf", length(b_s_shelf)))
 
 df <- data.frame(betas_by_group, cpg_regions)
-
+saveRDS(betas_by_group, file = "betas_by_group.Rds")
+saveRDS(cpg_regions, file = "cpg_regions.Rds")
+saveRDS(df, "df.Rds")
+```
+```{r Task_10_plot, message=FALSE, warning=FALSE, include=TRUE}
 qc_plot <- ggplot(df, aes(x = betas_by_group, colour = cpg_regions)) +
             labs(title = "Metilintos DNR pasiskirstymas",
                  x = NULL, y = "Tankis") +
@@ -290,16 +286,12 @@ qc_plot <- ggplot(df, aes(x = betas_by_group, colour = cpg_regions)) +
             theme(plot.title = element_text(hjust = 0.5)) +
             scale_colour_discrete(name = "CpG regionai")
 qc_plot + theme(legend.position = "bottom")
-
-saveRDS(betas_by_group, file = "betas_by_group.Rds")
-saveRDS(cpg_regions, file = "cpg_regions.Rds")
-saveRDS(df, "df.Rds")
 ```
 
-**11. Išsisaugokite paruoštus duomenis.**
+**11. Užsikrauname išsaugotus paruoštus duomenis.**
 
-```{r Task_11, message=FALSE, warning=FALSE, include=FALSE}
-load("beta.Rdata")
-load("pData.Rdata")
-load("annotation.Rdata")
+```{r Task_11, message=FALSE, warning=FALSE, include=TRUE}
+# load("beta.Rdata")
+# load("pData.Rdata")
+# load("annotation.Rdata")
 ```
