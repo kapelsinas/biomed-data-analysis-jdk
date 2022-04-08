@@ -243,7 +243,7 @@ load("pData.Rdata")
 load("annotation.Rdata")
 
 # Nuskaitomas beta duomenų rinkinys su pašalintomis išskirtimis:
-beta_clean <- readRDS("/home/enjoy/Desktop/dat8.Rds")
+beta_clean <- readRDS("dat8.Rds")
 
 pDatf <- as.data.frame(pData)
 annotf <- as.data.frame(annotation)
