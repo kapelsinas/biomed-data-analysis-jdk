@@ -51,3 +51,4 @@ vignettes/*.pdf
 detectionP.csv
 output.rds
 *.Rdata
+*.rds
