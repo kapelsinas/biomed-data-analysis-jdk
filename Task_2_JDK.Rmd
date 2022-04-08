@@ -239,8 +239,8 @@ rm(list = ls(all.names = TRUE))
 gc()
 
 # Įkeliami pData ir annotation objektai: 
-load("/home/enjoy/Desktop/pData.Rdata")
-load("/home/enjoy/Desktop/annotation.Rdata")
+load("pData.Rdata")
+load("annotation.Rdata")
 
 # Nuskaitomas beta duomenų rinkinys su pašalintomis išskirtimis:
 beta_clean <- readRDS("/home/enjoy/Desktop/dat8.Rds")
