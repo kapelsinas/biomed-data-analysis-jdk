@@ -1,0 +1,75 @@
+---
+title: "Praktinė užduotis Nr. 2"
+subtitle: "Klasterizavimas"
+author: "Jaroslav Rutkovskij, Danielė Stasiūnaitė, Karolis Augustauskas (JDK)"
+date: "4/24/2022"
+output: pdf_document
+---
+```{r Library preparations, include=FALSE}
+library(Signac)
+library(dplyr)
+```
+
+```{r Data_access, include=FALSE}
+beta <- readRDS("dat8.Rds")            # Modifikacijos įverčių matrica
+pData_col <- readRDS("pData.Rds")      # Mėginius (stulpelius) aprašanti matrica
+annot_row <- readRDS("annotation.Rds") # Pozicijas (eilutes) aprašanti matrica
+```
+
+# 1. Mėginių hierarchinis klasterizavimas
+```{r}
+```
+
+# 2. Mėginių atvaizdavimas "heatmap" pavidalu
+```{r Task_2_1, include=FALSE}
+# Nustatomi unikalūs 'chr' stulpelio, esančio matricoje, aprašančioje pozicijas
+# (eilutes), chromosomų pavadinimai:
+chr_names <- unique(annot_row$chr)     
+genes_only <- c()
+
+# Ciklas, kuriame tikrinama, ar tarp skirtingų chromosomų porų yra bendrų genų:
+for (i in 1:length(chr_names)) {
+  for (y in 1:length(chr_names)) {
+    if (i == y) { next }
+    else {
+      names1 <- annot_row[annot_row$chr == chr_names[i],
+                          'UCSC_RefGene_Name'] %>% unique()
+      names2 <- annot_row[annot_row$chr == chr_names[y],
+                          'UCSC_RefGene_Name'] %>% unique()
+      genes <- intersect(names1, names2)
+      if (genes[1] == '' & length(genes) == 1) { next }
+      else {
+        print(paste0(i, " ir ", y, ": ", genes))
+        genes_only <- c(genes_only, genes)
+      }
+    }
+  }
+}
+
+# Iš gauto genų sąrašo pašalinami tušti elementai (''):
+genes_only <- genes_only[! genes_only %in% c('')]
+genes_only
+# Sukuriama genų dažnių lentelė:
+table(genes_only)
+
+# Iš eilutes aprašančios matricos išrenkamos tik tos eilutės, kuriose
+# 'UCSC_RefGene_Name' stulpelio pavadinimas yra 'MIR7641-2' - genas, kuris
+# yra dažniausiai aptinkamas tarp skirtingų chromosomų:
+mt <- annot_row[annot_row$UCSC_RefGene_Name == "MIR7641-2", ] %>% data.matrix()
+heatmap(beta[rownames(mt),])
+```
+
+Nuskaitytiems duomenims pritaikyta standartinė ***heatmap()*** funkcija,
+iliustruojanti **beta** matricos reikšmes ir pagal spalvų intensyvumą bei
+atspalvį, leidžianti daryti išvadas apie duomenų grupes - klasterius.\
+Kadangi **beta** matrica turi ***`r dim(beta)[1]`*** eilutes bei
+***`r dim(beta)[2]`*** stulpelius, pavaizduoti visas matricos reikšmes,
+naudojantis ***heatmap()*** funkcija yra negalima.
+
+
+
+
+
+# 3. Tikro ir nuspėto amžiaus bei senėjimo "pagreitėjimo" nustatymas
+```{r}
+```
