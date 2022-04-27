@@ -1,5 +1,0 @@
----
-title: "Home page"
----
-
-## Welcome to our project home page!!!
