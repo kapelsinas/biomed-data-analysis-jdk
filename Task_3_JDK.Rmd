@@ -8,12 +8,16 @@ output: pdf_document
 ```{r Library preparations, include=FALSE}
 library(Signac)
 library(dplyr)
+library(heatmaply)
+library(reshape2)
+library(ggplot2)
+library(data.table)
 ```
 
 ```{r Data_access, include=FALSE}
-beta <- readRDS("dat8.Rds")            # Modifikacijos įverčių matrica
-pData_col <- readRDS("pData.Rds")      # Mėginius (stulpelius) aprašanti matrica
-annot_row <- readRDS("annotation.Rds") # Pozicijas (eilutes) aprašanti matrica
+beta <- readRDS("dat8.Rds")            # Modification value matrix
+pData_col <- readRDS("pData.Rds")      # Sample (column) matrix
+annot_row <- readRDS("annotation.Rds") # Position (row) matrix
 ```
 
 # 1. Mėginių hierarchinis klasterizavimas
@@ -22,12 +26,12 @@ annot_row <- readRDS("annotation.Rds") # Pozicijas (eilutes) aprašanti matrica
 
 # 2. Mėginių atvaizdavimas "heatmap" pavidalu
 ```{r Task_2_1, include=FALSE}
-# Nustatomi unikalūs 'chr' stulpelio, esančio matricoje, aprašančioje pozicijas
-# (eilutes), chromosomų pavadinimai:
+# Determining unique 'chr' column values (chromosome names) from the matrix
+# that describes positions (rows):
 chr_names <- unique(annot_row$chr)     
 genes_only <- c()
 
-# Ciklas, kuriame tikrinama, ar tarp skirtingų chromosomų porų yra bendrų genų:
+# Loop which checks whether there are common genes between chromosome pairs:
 for (i in 1:length(chr_names)) {
   for (y in 1:length(chr_names)) {
     if (i == y) { next }
@@ -39,24 +43,66 @@ for (i in 1:length(chr_names)) {
       genes <- intersect(names1, names2)
       if (genes[1] == '' & length(genes) == 1) { next }
       else {
-        print(paste0(i, " ir ", y, ": ", genes))
+        # print(paste0(i, " ir ", y, ": ", genes))
         genes_only <- c(genes_only, genes)
       }
     }
   }
 }
-
-# Iš gauto genų sąrašo pašalinami tušti elementai (''):
+```
+```{r Task_2_2, include=FALSE}
+# Removing empty elements ('') from the gene list:
 genes_only <- genes_only[! genes_only %in% c('')]
-genes_only
-# Sukuriama genų dažnių lentelė:
+
+# Creating gene expression frequency table:
 table(genes_only)
 
-# Iš eilutes aprašančios matricos išrenkamos tik tos eilutės, kuriose
-# 'UCSC_RefGene_Name' stulpelio pavadinimas yra 'MIR7641-2' - genas, kuris
-# yra dažniausiai aptinkamas tarp skirtingų chromosomų:
-mt <- annot_row[annot_row$UCSC_RefGene_Name == "MIR7641-2", ] %>% data.matrix()
-heatmap(beta[rownames(mt),])
+gene_list <- c(unique(genes_only))
+gene_cnts <- data.frame(chr = chr_names)  # gene_conts --> gene count dataframe
+gene_cnts
+for (g in 1:length(gene_list)) {
+  gene <- c()
+  for (j in 1:length(chr_names)) {
+    annot_chr <- annot_row[annot_row$chr == chr_names[j], ]
+    annot_gene <- annot_chr[annot_chr$UCSC_RefGene_Name == gene_list[g], ] %>% 
+                              data.matrix()
+    #if (length(annot_gene) == 0) {next}
+    # print(paste0(gene_list[g], ", ", chr_names[j], " = ", length(annot_gene)))
+    gene <- c(gene, length(annot_gene))
+  }
+  gene_cnts[ , ncol(gene_cnts) + 1] <- gene
+  colnames(gene_cnts)[ncol(gene_cnts)] <- gene_list[g]
+}
+```
+```{r Task_2_3, include=FALSE}
+gene_cmt <- data.matrix(gene_cnts)     # gene_cmt --> gene count matrix
+gene_cmt <- gene_cmt[ , 2:length(colnames(gene_cmt))]
+
+# fltrd_gene_cnts --> filtered gene count matrix (rows that contained only
+# only zero values were removed. It means that gene expression in
+# particular chromosome was not identified):
+fltrd_gene_cnts <- gene_cmt
+rownames(fltrd_gene_cnts) <- c(chr_names)
+fltrd_gene_cnts <- fltrd_gene_cnts[rowSums(fltrd_gene_cnts[]) > 0, ]
+gene_cnts_melt <- melt(fltrd_gene_cnts)
+
+plot1 <- ggplot(gene_cnts_melt, aes(x = Var2, y = value))+
+            geom_bar(stat = 'identity', fill = "#123e68")+
+            ylim(0, 1700) +
+            facet_wrap(~Var1) +
+            labs(title = "Genų ekspresija chromosomose", x = "Genas",
+                 y = "Ekspresija") +
+            geom_text(aes(label = value), vjust = -0.5, color = "black",
+                      size = 3)+
+            theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
+                  plot.title = element_text(hjust = 0.5, face = "bold"))
+plot1
+```
+Sukūrus aukščiau pavaizduotas stulpelines diagramas buvo nustatyta, kokie genai
+buvo dažniausi bei kokioje chromosomoje jų buvo daugiausiai.
+
+```{r Task_2_4, include=FALSE}
+
 ```
 
 Nuskaitytiems duomenims pritaikyta standartinė ***heatmap()*** funkcija,
