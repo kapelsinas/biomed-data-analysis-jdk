@@ -149,4 +149,26 @@ df3 <-data.frame(df2)
 dim(df3)
 DNAmAge(df3,clocks="Hannum")
 
+
+
+```
+
+
+```{r}
+# To avoid connection buffer size 
+Sys.setenv("VROOM_CONNECTION_SIZE" = 131072 * 10)
+
+# Download data
+dd <- GEOquery::getGEO("GSE142257")
+GSE142257 <- dd[[1]]
+
+# Restore connection buffer size
+Sys.setenv("VROOM_CONNECTION_SIZE" = 131072)
+
+pheno <- pData(GSE142257)
+age <- as.numeric(pheno$`age (years):ch1`)
+
+
+age.GSE142257 <- DNAmAge(GSE142257, age=age)
+
 ```
