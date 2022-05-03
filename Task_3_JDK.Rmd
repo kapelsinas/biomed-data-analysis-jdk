@@ -15,9 +15,9 @@ library(data.table)
 ```
 
 ```{r Data_access, include=FALSE}
-beta <- readRDS("dat8.Rds")            # Modification value matrix
-pData_col <- readRDS("pData.Rds")      # Sample (column) matrix
-annot_row <- readRDS("annotation.Rds") # Position (row) matrix
+beta <- readRDS("beta_values.rds")            # Modification value matrix
+pData_col <- readRDS("df.rds")      # Sample (column) matrix
+annot_row <- readRDS("name.rds") # Position (row) matrix
 ```
 
 # 1. Mėginių hierarchinis klasterizavimas
@@ -118,4 +118,35 @@ naudojantis ***heatmap()*** funkcija yra negalima.
 
 # 3. Tikro ir nuspėto amžiaus bei senėjimo "pagreitėjimo" nustatymas
 ```{r}
+#library(BiocManager)
+#install(c("tidyverse", "impute", "Rcpp"))
+#install.packages("devtools", dependencies = TRUE)
+
+#BiocManager::install("methylclock")
+#BiocManager::install("methylclockData")
+library(methylclock)
+library(methylclockData)
+
+library(Biobase)
+library(tibble)
+library(impute)
+library(ggplot2)
+library(ggpmisc)
+library(GEOquery)
+
+df1 <- data.matrix(beta)
+
+cpgs.missing <- checkClocks(df1)
+cpgs.missing.GA <- checkClocksGA(df1)
+
+df2<-matrix(c(rownames(df1), df1,df1),dim(df1))
+
+df2
+dim(df2)
+
+df3 <-data.frame(df2)
+
+dim(df3)
+DNAmAge(df3,clocks="Hannum")
+
 ```
