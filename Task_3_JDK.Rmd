@@ -132,6 +132,7 @@ Kadangi **beta** matrica turi ***`r dim(beta)[1]`*** eilutes bei ***`r dim(beta)
 
 library(methylclock)
 library(methylclockData)
+library(patchwork)
 
 ```
 
@@ -142,8 +143,6 @@ Hannum - blood based
 Levine - blood based
 
 ```{r}
-
-
 
 age.all <- DNAmAge(beta,clocks=c("Horvath", "Hannum","Levine"))
 
@@ -158,14 +157,19 @@ age.t1 <- age.all[age.all$id %in% vec.t1, ]
 vec.t2 <- info.t2$basename
 age.t2 <- age.all[age.all$id %in% vec.t2, ]
 
-plotDNAmAge(age.t1$Horvath, info.t1$age, tit = "Horvath method ( Time point 1 ) ", aes = c(color="red"))
-plotDNAmAge(age.t2$Horvath, info.t2$age, tit = "Horvath method ( Time point 2 ) " )
+p1.Horvath <- plotDNAmAge(age.t1$Horvath, info.t1$age, tit = "Horvath method ( Time point 1 ) ", aes = c(color="red"))
+p2.Horvath <- plotDNAmAge(age.t2$Horvath, info.t2$age, tit = "Horvath method ( Time point 2 ) " )
 
-plotDNAmAge(age.t1$Hannum, info.t1$age, tit = "Hannum method ( Time point 1 ) " )
-plotDNAmAge(age.t2$Hannum, info.t2$age, tit = "Hannum method ( Time point 2 ) " )
+p1.Hannum <- plotDNAmAge(age.t1$Hannum, info.t1$age, tit = "Hannum method ( Time point 1 ) " )
+p2.Hannum <- plotDNAmAge(age.t2$Hannum, info.t2$age, tit = "Hannum method ( Time point 2 ) " )
 
-plotDNAmAge(age.t1$Levine, info.t1$age, tit = "Levine method ( Time point 1 ) " )
-plotDNAmAge(age.t2$Levine, info.t2$age, tit = "Levine method ( Time point 2 ) " )
+p1.Levine <- plotDNAmAge(age.t1$Levine, info.t1$age, tit = "Levine method ( Time point 1 ) " )
+p2.Levine <- plotDNAmAge(age.t2$Levine, info.t2$age, tit = "Levine method ( Time point 2 ) " )
+
+p1.Horvath + p2.Horvath +
+  p1.Hannum + p2.Hannum +
+  p1.Levine + p2.Levine +
+    plot_layout(ncol = 2)
 
 ```
 
@@ -176,5 +180,27 @@ Parodoma visų trijų laikrodžių koreliacija.
 age.GSE <- DNAmAge(beta,clocks=c("Horvath", "Hannum","Levine"), age = info.clean$age)
 plotCorClocks(age.GSE)
 
+```
+
+
+
+```{r}
+
+
+tit = "Horvath method"
+
+  df <- data.frame(x = age.all$Horvath, y = info.clean$age, aspirin = info.clean$aspirin)
+  my.formula <- y ~ x
+  yy <- "Chronological Age"
+  p <- ggplot2::ggplot(data = df, ggplot2::aes(x = x, y = y)) + 
+    ggplot2::geom_smooth(method = "lm", se = FALSE, color = "black", 
+      formula = my.formula) + ggplot2::xlab("DNA Methylation Age") + 
+    ggplot2::ylab(yy) + ggplot2::ggtitle(tit) + 
+    ggplot2::aes(x, y, colour = aspirin) + ggplot2::geom_point()
+  p
 
 ```
+
+
+
+
