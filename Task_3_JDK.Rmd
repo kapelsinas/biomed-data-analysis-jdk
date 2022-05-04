@@ -135,13 +135,14 @@ library(ggplot2)
 library(ggpmisc)
 library(GEOquery)
 
-DNAmAge(beta)
+age.example <- DNAmAge(beta,clocks=c("Horvath", "Hannum"))
 
-age.example55 <- DNAmAge(beta)
+age.example
 
-age.example55$Horvath
+colnames(beta)
+dim(beta)
 
-
+info[info$basename == c(colnames(beta)), ]
 
 plotDNAmAge(age.example55$Horvath,head(info$age,96))
 
