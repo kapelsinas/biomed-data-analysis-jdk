@@ -125,25 +125,31 @@ naudojantis ***heatmap()*** funkcija yra negalima.
 
 #BiocManager::install("methylclock")
 #BiocManager::install("methylclockData")
+#library(Biobase)
+#library(tibble)
+#library(impute)
+#library(ggplot2)
+#library(ggpmisc)
+#library(GEOquery)
+
+
 library(methylclock)
 library(methylclockData)
 
-library(Biobase)
-library(tibble)
-library(impute)
-library(ggplot2)
-library(ggpmisc)
-library(GEOquery)
-
-age.example <- DNAmAge(beta,clocks=c("Horvath", "Hannum"))
-
-colnames(beta)
-dim(beta)
+age.all <- DNAmAge(beta,clocks=c("Horvath", "Hannum"))
 
 vec <- colnames(beta)
-info[info$basename %in% vec, ]
+info.clean <-info[info$basename %in% vec, ]
+info.t1 <- info.clean[info.clean$timepoint == "t1", ]
+info.t2 <- info.clean[info.clean$timepoint == "t2", ]
 
-plotDNAmAge(age.example55$Horvath,head(info$age,96))
+vec.t1 <- info.t1$basename
+age.t1 <- age.all[age.all$id %in% vec.t1, ]
+
+plotDNAmAge(age.t1$Horvath, info.t1$age, tit = "Horvath method")
+
+plotDNAmAge(age.t1$Hannum, info.t1$age, tit = "Hannum method" )
+
 
 ```
 
