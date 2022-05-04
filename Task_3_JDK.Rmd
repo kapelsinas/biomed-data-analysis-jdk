@@ -143,7 +143,13 @@ info.clean <-info[info$basename %in% vec, ]
 info.t1 <- info.clean[info.clean$timepoint == "t1", ]
 info.t2 <- info.clean[info.clean$timepoint == "t2", ]
 
-plotDNAmAge(age.t1$Horvath, info.t1$age, tit = "Horvath method ( Time point 1 ) ", colour="red" )
+vec.t1 <- info.t1$basename
+age.t1 <- age.all[age.all$id %in% vec.t1, ]
+
+vec.t2 <- info.t2$basename
+age.t2 <- age.all[age.all$id %in% vec.t2, ]
+
+plotDNAmAge(age.t1$Horvath, info.t1$age, tit = "Horvath method ( Time point 1 ) ", aes = c(color="red"))
 plotDNAmAge(age.t2$Horvath, info.t2$age, tit = "Horvath method ( Time point 2 ) " )
 
 plotDNAmAge(age.t1$Hannum, info.t1$age, tit = "Hannum method ( Time point 1 ) " )
@@ -157,6 +163,10 @@ missCpGs <- checkClocks(beta)
 
 age.GSE <- DNAmAge(beta,clocks=c("Horvath", "Hannum","Levine"), age = info.clean$age)
 plotCorClocks(age.GSE)
+
+
+
+
 
 ```
 
