@@ -136,7 +136,7 @@ naudojantis ***heatmap()*** funkcija yra negalima.
 library(methylclock)
 library(methylclockData)
 
-age.all <- DNAmAge(beta,clocks=c("Horvath", "Hannum"))
+age.all <- DNAmAge(beta,clocks=c("Horvath", "Hannum","Levine"))
 
 vec <- colnames(beta)
 info.clean <-info[info$basename %in% vec, ]
@@ -154,6 +154,11 @@ plotDNAmAge(age.t2$Horvath, info.t2$age, tit = "Horvath method ( Time point 2 ) 
 
 plotDNAmAge(age.t1$Hannum, info.t1$age, tit = "Hannum method ( Time point 1 ) " )
 plotDNAmAge(age.t2$Hannum, info.t2$age, tit = "Hannum method ( Time point 2 ) " )
+
+plotDNAmAge(age.t1$Levine, info.t1$age, tit = "Levine method ( Time point 1 ) " )
+plotDNAmAge(age.t2$Levine, info.t2$age, tit = "Levine method ( Time point 2 ) " )
+
+missCpGs <- checkClocks(beta)
 
 ```
 
