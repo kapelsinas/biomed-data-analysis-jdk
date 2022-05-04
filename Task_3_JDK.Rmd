@@ -137,12 +137,11 @@ library(GEOquery)
 
 age.example <- DNAmAge(beta,clocks=c("Horvath", "Hannum"))
 
-age.example
-
 colnames(beta)
 dim(beta)
 
-info[info$basename == c(colnames(beta)), ]
+vec <- colnames(beta)
+info[info$basename %in% vec, ]
 
 plotDNAmAge(age.example55$Horvath,head(info$age,96))
 
