@@ -15,9 +15,10 @@ library(data.table)
 ```
 
 ```{r Data_access, include=FALSE}
-beta <- readRDS("beta_values.rds")            # Modification value matrix
-pData_col <- readRDS("df.rds")      # Sample (column) matrix
-annot_row <- readRDS("name.rds") # Position (row) matrix
+beta <- readRDS("/home/enjoy/Desktop/dat8.Rds")            # Modification value matrix
+pData_col <- readRDS("/home/enjoy/Desktop/pData.Rds")      # Sample (column) matrix
+annot_row <- readRDS("/home/enjoy/Desktop/annotation.Rds") # Position (row) matrix
+info <- read.csv("/home/enjoy/Documents/GitHub/biomed-data-analysis-jdk/data.csv")
 ```
 
 # 1. Mėginių hierarchinis klasterizavimas
@@ -134,39 +135,15 @@ library(ggplot2)
 library(ggpmisc)
 library(GEOquery)
 
-df1 <- data.matrix(beta)
+DNAmAge(beta)
 
-cpgs.missing <- checkClocks(df1)
-cpgs.missing.GA <- checkClocksGA(df1)
+age.example55 <- DNAmAge(beta)
 
-df2<-matrix(c(rownames(df1), df1),dim(df1))
-
-df3 <-data.frame(df2)
-df3
-
-dim(df3)
-DNAmAge(df3,clocks="Hannum")
+age.example55$Horvath
 
 
+
+plotDNAmAge(age.example55$Horvath,head(info$age,96))
 
 ```
 
-
-```{r}
-# To avoid connection buffer size 
-Sys.setenv("VROOM_CONNECTION_SIZE" = 131072 * 10)
-
-# Download data
-dd <- GEOquery::getGEO("GSE142257")
-GSE142257 <- dd[[1]]
-
-# Restore connection buffer size
-Sys.setenv("VROOM_CONNECTION_SIZE" = 131072)
-
-pheno <- pData(GSE142257)
-age <- as.numeric(pheno$`age (years):ch1`)
-
-
-age.GSE142257 <- DNAmAge(GSE142257, age=age)
-
-```
