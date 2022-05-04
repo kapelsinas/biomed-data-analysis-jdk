@@ -5,6 +5,7 @@ author: "Jaroslav Rutkovskij, Danielė Stasiūnaitė, Karolis Augustauskas (JDK)
 date: "4/24/2022"
 output: pdf_document
 ---
+
 ```{r Library preparations, include=FALSE}
 library(Signac)
 library(dplyr)
@@ -22,10 +23,12 @@ info <- read.csv("/home/enjoy/Documents/GitHub/biomed-data-analysis-jdk/data.csv
 ```
 
 # 1. Mėginių hierarchinis klasterizavimas
+
 ```{r}
 ```
 
 # 2. Mėginių atvaizdavimas "heatmap" pavidalu
+
 ```{r Task_2_1, include=FALSE}
 # Determining unique 'chr' column values (chromosome names) from the matrix
 # that describes positions (rows):
@@ -51,6 +54,7 @@ for (i in 1:length(chr_names)) {
   }
 }
 ```
+
 ```{r Task_2_2, include=FALSE}
 # Removing empty elements ('') from the gene list:
 genes_only <- genes_only[! genes_only %in% c('')]
@@ -75,6 +79,7 @@ for (g in 1:length(gene_list)) {
   colnames(gene_cnts)[ncol(gene_cnts)] <- gene_list[g]
 }
 ```
+
 ```{r Task_2_3, include=FALSE}
 gene_cmt <- data.matrix(gene_cnts)     # gene_cmt --> gene count matrix
 gene_cmt <- gene_cmt[ , 2:length(colnames(gene_cmt))]
@@ -99,25 +104,18 @@ plot1 <- ggplot(gene_cnts_melt, aes(x = Var2, y = value))+
                   plot.title = element_text(hjust = 0.5, face = "bold"))
 plot1
 ```
-Sukūrus aukščiau pavaizduotas stulpelines diagramas buvo nustatyta, kokie genai
-buvo dažniausi bei kokioje chromosomoje jų buvo daugiausiai.
+
+Sukūrus aukščiau pavaizduotas stulpelines diagramas buvo nustatyta, kokie genai buvo dažniausi bei kokioje chromosomoje jų buvo daugiausiai.
 
 ```{r Task_2_4, include=FALSE}
 
 ```
 
-Nuskaitytiems duomenims pritaikyta standartinė ***heatmap()*** funkcija,
-iliustruojanti **beta** matricos reikšmes ir pagal spalvų intensyvumą bei
-atspalvį, leidžianti daryti išvadas apie duomenų grupes - klasterius.\
-Kadangi **beta** matrica turi ***`r dim(beta)[1]`*** eilutes bei
-***`r dim(beta)[2]`*** stulpelius, pavaizduoti visas matricos reikšmes,
-naudojantis ***heatmap()*** funkcija yra negalima.
-
-
-
-
+Nuskaitytiems duomenims pritaikyta standartinė ***heatmap()*** funkcija, iliustruojanti **beta** matricos reikšmes ir pagal spalvų intensyvumą bei atspalvį, leidžianti daryti išvadas apie duomenų grupes - klasterius.\
+Kadangi **beta** matrica turi ***`r dim(beta)[1]`*** eilutes bei ***`r dim(beta)[2]`*** stulpelius, pavaizduoti visas matricos reikšmes, naudojantis ***heatmap()*** funkcija yra negalima.
 
 # 3. Tikro ir nuspėto amžiaus bei senėjimo "pagreitėjimo" nustatymas
+
 ```{r}
 #library(BiocManager)
 #install(c("tidyverse", "impute", "Rcpp"))
@@ -134,6 +132,17 @@ naudojantis ***heatmap()*** funkcija yra negalima.
 
 library(methylclock)
 library(methylclockData)
+
+```
+
+Naudojant BioConductor methylClock paketą visiems meginiams yra gaunami DNR modifikacijos laikrodžiai.
+Pasirinkti 3 laikrodžiai:
+Horvath - developed across multiple tissues
+Hannum - blood based
+Levine - blood based
+
+```{r}
+
 
 
 age.all <- DNAmAge(beta,clocks=c("Horvath", "Hannum","Levine"))
@@ -158,15 +167,14 @@ plotDNAmAge(age.t2$Hannum, info.t2$age, tit = "Hannum method ( Time point 2 ) " 
 plotDNAmAge(age.t1$Levine, info.t1$age, tit = "Levine method ( Time point 1 ) " )
 plotDNAmAge(age.t2$Levine, info.t2$age, tit = "Levine method ( Time point 2 ) " )
 
-missCpGs <- checkClocks(beta)
+```
 
+Parodoma visų trijų laikrodžių koreliacija.
+
+```{r}
 
 age.GSE <- DNAmAge(beta,clocks=c("Horvath", "Hannum","Levine"), age = info.clean$age)
 plotCorClocks(age.GSE)
 
 
-
-
-
 ```
-
