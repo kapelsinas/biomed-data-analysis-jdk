@@ -136,7 +136,6 @@ library(patchwork)
 
 ```
 
-
 ```{r}
 
 age.all <- DNAmAge(beta,clocks=c("Horvath", "Hannum", "Levine"))
@@ -194,9 +193,7 @@ p2.Horvath.proximal + p2.Horvath.distal +
 
 ```
 
-Parodoma kuris iš trijų naudojamų laikrodžių yra tiksliausias ir kuris yra mažiausiai tikslus.
-Naudododami DNAmAge funkciją pamatome, kad tiksliausias yra Horvarth laikrodis, kurio nuklydimo vidurkis ***`r MostAcc`***,
-o mažiausias tikslus yra Levine, kurio vidurkis ***`r LeastAcc`***
+Parodoma kuris iš trijų naudojamų laikrodžių yra tiksliausias ir kuris yra mažiausiai tikslus. Naudododami DNAmAge funkciją pamatome, kad tiksliausias yra Horvarth laikrodis, kurio nuklydimo vidurkis ***`r MostAcc`***, o mažiausias tikslus yra Levine, kurio vidurkis ***`r LeastAcc`***
 
 Taip pat parodo koreliacija tarp visų trijų laikrodžių.
 
@@ -218,6 +215,7 @@ LeastAcc
 plotCorClocks(age.GSE)
 
 ```
+
 Parodoma kaip nuspėti amžiai skiriasi tarp vartojančių apsiriną ir nevartojančių.
 
 ```{r}
@@ -228,27 +226,23 @@ tit = "Horvath method"
 df <- data.frame(x = age.t1.proximal$Horvath, y = info.t1.proximal$age, aspirin = info.t1.proximal$aspirin)
 my.formula <- y ~ x
 yy <- "Chronological Age"
-  p <- ggplot2::ggplot(data = df, ggplot2::aes(x = x, y = y)) + 
+  p1 <- ggplot2::ggplot(data = df, ggplot2::aes(x = x, y = y)) + 
     ggplot2::geom_smooth(method = "lm", se = FALSE, color = "black", 
       formula = my.formula) + ggplot2::xlab("DNA Methylation Age") + 
     ggplot2::ylab(yy) + ggplot2::ggtitle(tit) + 
     ggplot2::aes(x, y, colour = aspirin) + ggplot2::geom_point()
-p
 
 
 df <- data.frame(x = age.t2.proximal$Horvath, y = info.t2.proximal$age, aspirin = info.t1.proximal$aspirin)
 my.formula <- y ~ x
 yy <- "Chronological Age"
-  p <- ggplot2::ggplot(data = df, ggplot2::aes(x = x, y = y)) + 
+  p2 <- ggplot2::ggplot(data = df, ggplot2::aes(x = x, y = y)) + 
     ggplot2::geom_smooth(method = "lm", se = FALSE, color = "black", 
       formula = my.formula) + ggplot2::xlab("DNA Methylation Age") + 
     ggplot2::ylab(yy) + ggplot2::ggtitle(tit) + 
     ggplot2::aes(x, y, colour = aspirin) + ggplot2::geom_point()
-p
+
+  p1 + p2
 
 
 ```
-
-
-
-
