@@ -168,20 +168,20 @@ age.t2.distal <- age.all[age.all$id %in% vec.t2, ]
 p1.Horvath.proximal <- plotDNAmAge(age.t1.proximal$Horvath, info.t1.proximal$age, tit = "Horvath method ( proximal ) " )
 p1.Horvath.distal <- plotDNAmAge(age.t1.distal$Horvath, info.t2.distal$age, tit = "Horvath method ( distal ) " )
 
-p1.Hannum.proximal <- plotDNAmAge(age.t1$Hannum, info.t1$age, tit = "Hannum method ( Time point 1 ) " )
-p1.Hannum.distal <- plotDNAmAge(age.t2$Hannum, info.t2$age, tit = "Hannum method ( Time point 2 ) " )
+p1.Hannum.proximal <- plotDNAmAge(age.t1.proximal$Hannum, info.t1.proximal$age, tit = "Hannum method ( proximal ) " )
+p1.Hannum.distal <- plotDNAmAge(age.t1.distal$Hannum, info.t1.distal$age, tit = "Hannum method ( distal ) " )
 
-p1.Levine.proximal <- plotDNAmAge(age.t1$Levine, info.t1$age, tit = "Levine method ( Time point 1 ) " )
-p1.Levine.distal <- plotDNAmAge(age.t2$Levine, info.t2$age, tit = "Levine method ( Time point 2 ) " )
+p1.Levine.proximal <- plotDNAmAge(age.t1.proximal$Levine, info.t1.proximal$age, tit = "Levine method ( proximal ) " )
+p1.Levine.distal <- plotDNAmAge(age.t1.distal$Levine, info.t2.distal$age, tit = "Levine method ( distal ) " )
 
-p2.Horvath.proximal <- plotDNAmAge(age.t1$Horvath, info.t1$age, tit = "Horvath method ( Time point 1 ) " )
-p2.Horvath.distal <- plotDNAmAge(age.t2$Horvath, info.t2$age, tit = "Horvath method ( Time point 2 ) " )
+p2.Horvath.proximal <- plotDNAmAge(age.t2.proximal$Horvath, info.t2.proximal$age, tit = "Horvath method ( proximal ) " )
+p2.Horvath.distal <- plotDNAmAge(age.t2.distal$Horvath, info.t2.distal$age, tit = "Horvath method ( distal ) " )
 
-p2.Hannum.proximal <- plotDNAmAge(age.t1$Hannum, info.t1$age, tit = "Hannum method ( Time point 1 ) " )
-p2.Hannum.distal <- plotDNAmAge(age.t2$Hannum, info.t2$age, tit = "Hannum method ( Time point 2 ) " )
+p2.Hannum.proximal <- plotDNAmAge(age.t2.proximal$Hannum, info.t1$age, tit = "Hannum method ( proximal ) " )
+p2.Hannum.distal <- plotDNAmAge(age.t2.distal$Hannum, info.t2$age, tit = "Hannum method ( distal ) " )
 
-p2.Levine.proximal <- plotDNAmAge(age.t1$Levine, info.t1$age, tit = "Levine method ( Time point 1 ) " )
-p2.Levine.distal <- plotDNAmAge(age.t2$Levine, info.t2$age, tit = "Levine method ( Time point 2 ) " )
+p2.Levine.proximal <- plotDNAmAge(age.t2.proximal$Levine, info.t1$age, tit = "Levine method ( proximal ) " )
+p2.Levine.distal <- plotDNAmAge(age.t2.distal$Levine, info.t2$age, tit = "Levine method ( distal ) " )
 
 p1.Horvath + p2.Horvath +
   p1.Hannum + p2.Hannum +
