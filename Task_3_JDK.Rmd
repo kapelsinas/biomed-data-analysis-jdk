@@ -218,7 +218,7 @@ colnames(Acc)[max.col(Acc, ties.method = "first")]
 plotCorClocks(age.GSE)
 
 ```
-
+Parodoma
 
 
 ```{r}
@@ -226,7 +226,7 @@ plotCorClocks(age.GSE)
 
 tit = "Horvath method"
 
-df <- data.frame(x = age.all$Horvath, y = info.clean$age, aspirin = info.clean$aspirin)
+df <- data.frame(x = age.t1.proximal$Horvath, y = info.t1.proximal$age, aspirin = info.t1.proximal$aspirin)
 my.formula <- y ~ x
 yy <- "Chronological Age"
   p <- ggplot2::ggplot(data = df, ggplot2::aes(x = x, y = y)) + 
@@ -235,6 +235,18 @@ yy <- "Chronological Age"
     ggplot2::ylab(yy) + ggplot2::ggtitle(tit) + 
     ggplot2::aes(x, y, colour = aspirin) + ggplot2::geom_point()
 p
+
+
+df <- data.frame(x = age.t2.proximal$Horvath, y = info.t2.proximal$age, aspirin = info.t1.proximal$aspirin)
+my.formula <- y ~ x
+yy <- "Chronological Age"
+  p <- ggplot2::ggplot(data = df, ggplot2::aes(x = x, y = y)) + 
+    ggplot2::geom_smooth(method = "lm", se = FALSE, color = "black", 
+      formula = my.formula) + ggplot2::xlab("DNA Methylation Age") + 
+    ggplot2::ylab(yy) + ggplot2::ggtitle(tit) + 
+    ggplot2::aes(x, y, colour = aspirin) + ggplot2::geom_point()
+p
+
 
 ```
 
