@@ -524,20 +524,16 @@ p2.Hannum.distal <- plotDNAmAge(age.t2.distal$Hannum, info.t2$age,
 p2.Levine.distal <- plotDNAmAge(age.t2.distal$Levine, info.t2$age,
                                 tit = "Levine method (distal)")
 
-p1.Horvath.proximal + p1.Horvath.distal + p1.Hannum.proximal + p1.Hannum.distal +
-  p1.Levine.proximal + p1.Levine.distal +
-    plot_layout(ncol = 2)
-p2.Horvath.proximal + p2.Horvath.distal +
-  p2.Hannum.proximal + p2.Hannum.distal +
-  p2.Levine.proximal + p2.Levine.distal +
-    plot_layout(ncol = 2)
-```
+p1.Horvath.proximal + p1.Horvath.distal + p1.Hannum.proximal +
+  p1.Hannum.distal + p1.Levine.proximal + p1.Levine.distal +
 
-Parodoma, kuris iš trijų naudojamų laikrodžių yra tiksliausias ir kuris
-yra mažiausiai tikslus. Naudododami *DNAmAge* funkciją pamatome, kad
-tiksliausias yra ***Horvarth laikrodis***, kurio nuklydimo vidurkis yra
-***`r MostAcc`***, o mažiausiai tikslus yra ***Levine laikrodis***,
-kurio vidurkis yra lygus ***`r LeastAcc`***.
+  plot_layout(ncol = 2)
+
+p2.Horvath.proximal + p2.Horvath.distal + p2.Hannum.proximal +
+  p2.Hannum.distal + p2.Levine.proximal + p2.Levine.distal +
+
+  plot_layout(ncol = 2)
+```
 
 \pagebreak
 
@@ -558,7 +554,13 @@ LeastAcc <- colnames(Acc)[max.col(Acc, ties.method = "first")]
 LeastAcc
 ```
 
-Taip pat parodo koreliacija tarp visų trijų laikrodžių.
+Parodoma, kuris iš trijų naudojamų laikrodžių yra tiksliausias ir kuris
+yra mažiausiai tikslus. Naudododami *DNAmAge* funkciją pamatome, kad
+tiksliausias yra ***Horvarth laikrodis***, kurio nuklydimo vidurkis yra
+***`r MostAcc`***, o mažiausiai tikslus yra ***Levine laikrodis***,
+kurio vidurkis yra lygus ***`r LeastAcc`***.
+
+Žemiau yra vaizduojama koreliacija tarp visų trijų laikrodžių.
 
 ```{r Task_3_3, echo=FALSE, message=FALSE, warning=FALSE}
 plotCorClocks(age.GSE)
@@ -584,7 +586,7 @@ p1 <- ggplot(data = df, aes(x = x, y = y)) +
           geom_point()
 
 df <- data.frame(x = age.t2.proximal$Horvath, y = info.t2.proximal$age,
-                 aspirin = info.t1.proximal$aspirin)
+                 aspirin = info.t2.proximal$aspirin)
 
 p2 <- ggplot(data = df, aes(x = x, y = y)) + 
           geom_smooth(method = "lm", se = FALSE, color = "black",
