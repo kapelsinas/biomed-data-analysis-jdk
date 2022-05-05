@@ -4,14 +4,24 @@ author: "Jaroslav Rutkovskij, Danielė Stasiūnaitė, Karolis Augustauskas (JDK)
 date: "4/24/2022"
 output:
   pdf_document: default
+  html_document:
+    df_print: paged
 subtitle: Klasterizavimas
 ---
 
-```{r Library_preparations, warning=FALSE, include=FALSE}
+```{r options, include=FALSE}
+knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
+```
+
+```{r Library preparations, warning=FALSE, include=FALSE}
 library(pacman)
 p_load(Signac, dplyr, heatmaply, reshape2, ggplot2, data.table, matrixStats,
+       WGCNA, ggpubr, tidyverse, palmerpenguins, Rtsne,
+       methylclockData, methylclock, Signac, dplyr, heatmaply, reshape2, ggplot2, data.table, matrixStats,
        WGCNA, ggpubr, ComplexHeatmap, hrbrthemes, dendextend, RColorBrewer,
        Heatplus, gplots, heatmap3, matrixStats)
+enableWGCNAThreads()
+set.seed(1973)
 ```
 
 ```{r Data_access, warning=FALSE, include=FALSE}
@@ -69,10 +79,89 @@ head(beta[, 1:2], n = 3)
 write.csv(samples, "samples2.csv")
 ```
 
-# 1. Mėginių hierarchinis klasterizavimas
+Prieš atliekant duomenų hierarchinį klasterizavimą buvo sukurti nauji mėginių pavadinimai, pakeičiant originalius pavadinimus, kurie buvo ilgi ir neinformatyvūs. Pavadinimai buvo pakeisti, vadovaujantis žemiau aprašytu principu:\
 
-```{r}
+1.  Nurodomas donoro numeris. Pvz.: ***n37***.\
+2.  Po apatinio brūkšnio nurodomas laikas, kada buvo imta biopsija (gali būti ***t1*** arba ***t2***, kur ***t1*** nurodo, kad biopsija buvo imta pirmaisiais metais, o ***t2*** nurodo, kad biopsija buvo paimta praėjus 10 metų po pirmosios procedūros).\
+3.  Po apatinio brūkšnio nurodoma, iš kurios žarnos (proksimalinės ar distalinės) buvo imama biopsija. Žarnų tipai užrašomi sutrumpinus pilnus pavadinimus iki keturių raidžių:\
+    **proximal** $\Rightarrow$ ***prox***, **distal** $\Rightarrow$ ***dist***.\
+4.  Po apatinio brūkšnio trijų raidžių kombinacija nurodoma, ar tiriamasis vartojo aspiriną: ***nnu*** $\Rightarrow$ **aspirinas nevartojamas (non-user)**, ***lng*** $\Rightarrow$ **aspirinas vartojamas (longterm user)**.\
+5.  Po apatinio brūkšnio nurodomas moters amžius.\
+
+Pilnas naujai sukurto pavadinimo pavyzdys: ***n10_t1_prox_nnu_55***, kur:\
+- **n10** - donoro numeris; - **t1** - biopsija imta pirmaisiais tyrimo metais; - **prox** - mėginys gautas iš proksimalinės žarnos; - **nnu** - tiriamasis nevartojo asprino; - **55** - tiriamojo amžius.
+
+```{r Filename_generation, include=FALSE, message=FALSE, warning=FALSE}
+samples <- read.table("samples.txt", header = TRUE, sep = "\t")
+samples <- samples[samples$Basename %in% colnames(beta),]
+# Sort samples by beta
+samples <- samples[order(match(samples$Basename, colnames(beta))),]
+samples$graph_name <- paste0("n", samples$donor, "_", samples$timepoint, "_",
+                               substring(samples$clonic_location, 1, 4), "_",
+                               paste0(substring(samples$aspirin, 1, 1),
+                                      substring(samples$aspirin, 3, 4)), "_",
+                               samples$age)
+
+colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 ```
+\newpage
+
+# 1. Mėginių hierarchinis klasterizavimas
+```{r Task_1_1, echo=FALSE, message=FALSE, warning=FALSE, fig.show='hold', out.width='90%'}
+d <- dist(1 - cor(beta))
+
+clust <- hclust(d, method = "complete")
+
+# Creating color groups
+clonic_location <- labels2colors((samples[samples$graph_name == colnames(beta),]$clonic_location), colorSeq = c("royalblue", "royalblue4"))
+timepoint <- labels2colors((samples[samples$graph_name == colnames(beta),]$timepoint), colorSeq = c("darkolivegreen1", "darkolivegreen4"))
+aspirin <- labels2colors((samples[samples$graph_name == colnames(beta),]$aspirin), colorSeq = c("salmon", "seagreen1"))
+has_polyp <- labels2colors((samples[samples$graph_name == colnames(beta),]$polyp), colorSeq = c("honeydew2", "lightcoral"))
+
+groups <- cutree(clust, 3)
+
+# Plotting dendrogram
+plotDendroAndColors(clust, cbind(clusters=labels2colors(groups), clonic_location, has_polyp,aspirin, timepoint), main = "Cluster dendrogram", ylab = "Aukštis", hang = -1)
+plot(NULL ,xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+legend("left", pch=16, bty='n', xpd=TRUE, legend = c("Proximal","Distal", "t1", "t2", "Aspirin_user", "Aspirin_nonuser", "Polyp_yes", "Polyp_no" ), col=c("royalblue4", "royalblue", "darkolivegreen1", "darkolivegreen4", "salmon", "seagreen1", "lightcoral", "honeydew2"))
+
+# Aprašykite rezultatus ir tendencijas; kokia informacija apie mėginius daro didžiausią įtaką klasterizavimui, kiek klasterių išskirtumėte, ar viduje atskirų klasterių matomi smulkesni susiskirstymai, ir t.t. ir pan.
+```
+Išskyrėme 3 klasterius. Iš dendrogramos galime matyti du ryškius klasterius su distalinės žarnos ir proksimalinės žarnos mėginiais. Išskirtame viduriniame klasteryje matosi mėginiai, kurie turėjo polypų(polyp_yes), daugiau buvo ilgalaikių aspirino naudotojų(aspirin_user), taip pat daug mėginių paimtų vėlesniu laikotarpiu(t2). Daugiau smulkesnių susiskirstymų neišskyrėme.
+\newpage
+
+Dabar išbandysime "t-SNE" klasterizavimo metodą
+
+```{r extra_clustering, echo=FALSE, message=FALSE, warning=FALSE, fig.show='hold'}
+
+beta_meta <- samples %>%
+    select(clonic_location, timepoint, aspirin) %>% mutate(ID=row_number())
+
+tSNE_fit <- Rtsne(d)
+
+# The tSNE result object contains two tSNE components that we are interested in. We can extract the components and save it in a dataframe.
+tSNE_df <- tSNE_fit$Y %>% 
+  as.data.frame() %>%
+  rename(tSNE1="V1",
+         tSNE2="V2") %>%
+  mutate(ID=row_number())
+
+tSNE_df <- tSNE_df %>%
+  inner_join(beta_meta, by="ID")
+
+tSNE_df %>%
+  ggplot(aes(x = tSNE1, 
+             y = tSNE2,
+             color = aspirin,
+             shape = clonic_location))+
+  geom_point(size=3)+
+  ggtitle("t-SNE")+
+  theme(legend.position="right")
+
+```
+
+Kaip ir preitoje diagramoje matome du ryškius klasterius, vieną su distalinės žarnos mėginiai(apskritimai), kitą su proksimalinės žarnos mėginiais(trikampiai).
+\newpage
 
 # 2. Mėginių atvaizdavimas "heatmap" pavidalu
 
