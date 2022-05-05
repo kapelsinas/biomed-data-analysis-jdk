@@ -136,11 +136,6 @@ library(patchwork)
 
 ```
 
-Naudojant BioConductor methylClock paketą visiems meginiams yra gaunami DNR modifikacijos laikrodžiai.
-Pasirinkti 3 laikrodžiai:
-Horvath - developed across multiple tissues
-Hannum - blood based
-Levine - blood based
 
 ```{r}
 
@@ -200,7 +195,10 @@ p2.Horvath.proximal + p2.Horvath.distal +
 ```
 
 Parodoma kuris iš trijų naudojamų laikrodžių yra tiksliausias ir kuris yra mažiausiai tikslus.
-Taip pat parodo koreliacija tarp visų trijų laikrodžių
+Naudododami DNAmAge funkciją pamatome, kad tiksliausias yra Horvarth laikrodis, kurio nuklydimo vidurkis ***`r MostAcc`***,
+o mažiausias tikslus yra Levine, kurio vidurkis ***`r LeastAcc`***
+
+Taip pat parodo koreliacija tarp visų trijų laikrodžių.
 
 ```{r}
 
@@ -211,15 +209,16 @@ Acc <- data.frame( Horvarth = abs(mean(age.GSE$ageAcc.Horvath)),
                    Levine = abs(mean(age.GSE$ageAcc.Levine)))
 
 # Tiksliausias laikrodis
-colnames(Acc)[max.col(-Acc, ties.method = "first")]
+MostAcc <- colnames(Acc)[max.col(-Acc, ties.method = "first")]
+MostAcc
 # Mažiausiai tikslus laikrodisi
-colnames(Acc)[max.col(Acc, ties.method = "first")]
+LeastAcc <-colnames(Acc)[max.col(Acc, ties.method = "first")]
+LeastAcc
 
 plotCorClocks(age.GSE)
 
 ```
-Parodoma
-
+Parodoma kaip nuspėti amžiai skiriasi tarp vartojančių apsiriną ir nevartojančių.
 
 ```{r}
 
