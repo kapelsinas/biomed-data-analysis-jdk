@@ -6,38 +6,46 @@ output:
   pdf_document: default
 subtitle: Klasterizavimas
 ---
-```{r Library_preparations, include=FALSE}
+
+```{r Library_preparations, warning=FALSE, include=FALSE}
 library(pacman)
 p_load(Signac, dplyr, heatmaply, reshape2, ggplot2, data.table, matrixStats,
        WGCNA, ggpubr, ComplexHeatmap, hrbrthemes, dendextend, RColorBrewer,
-       Heatplus, gplots, heatmap3)
+       Heatplus, gplots, heatmap3, matrixStats)
 ```
 
-```{r Data_access, include=FALSE}
+```{r Data_access, warning=FALSE, include=FALSE}
 beta <- readRDS("dat8.Rds")               # Modification value matrix
 pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
 annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
 ```
 
-Prieš atliekant duomenų hierarchinį klasterizavimą buvo sukurti nauji
-mėginių pavadinimai, pakeičiant originalius pavadinimus, kurie buvo ilgi ir
+## Pagrindinės užduotys
+
+Prieš atliekant duomenų hierarchinį klasterizavimą buvo sukurti nauji mėginių
+pavadinimai, pakeičiant originalius pavadinimus, kurie buvo ilgi ir
 neinformatyvūs. Pavadinimai buvo pakeisti, vadovaujantis žemiau aprašytu
 principu:
 
-1. Nurodomas donoro numeris. Pvz.: ***n37***.\
-2. Po apatinio brūkšnio nurodomas laikas, kada buvo imta biopsija (gali
-būti ***t1*** arba ***t2***, kur ***t1*** nurodo, kad biopsija buvo imta pirmaisiais
+1. Nurodomas donoro numeris. Pvz.: ***n37***.
+
+2. Po apatinio brūkšnio nurodomas laikas, kada buvo imta biopsija (gali būti
+***t1*** arba ***t2***, kur ***t1*** nurodo, kad biopsija buvo imta pirmaisiais
 metais, o ***t2*** nurodo, kad biopsija buvo paimta praėjus 10 metų po
-pirmosios procedūros).\
+pirmosios biopsijos ėmimo).
+
 3. Po apatinio brūkšnio nurodoma, iš kurios žarnos (proksimalinės ar
 distalinės) buvo imama biopsija. Žarnų tipai užrašomi sutrumpinus pilnus
 pavadinimus iki keturių raidžių:\
-**proximal** \(\Rightarrow\) ***prox***, **distal** \(\Rightarrow\) ***dist***.\
+**proximal** $\Rightarrow$ ***prox***,\
+**distal** $\Rightarrow$ ***dist***.
+
 4. Po apatinio brūkšnio trijų raidžių kombinacija nurodoma, ar tiriamasis
-vartojo aspiriną: ***nnu*** \(\Rightarrow\)
-**aspirinas nevartojamas (non-user)**, ***lng*** \(\Rightarrow\)
-**aspirinas vartojamas (longterm user)**.\
-5. Po apatinio brūkšnio nurodomas moters amžius.\
+vartojo aspiriną:\
+***nnu*** $\Rightarrow$ **aspirinas nevartojamas (non-user)**,\
+***lng*** $\Rightarrow$ **aspirinas vartojamas (longterm user)**.
+
+5. Po apatinio brūkšnio nurodomas moters amžius.
 
 Pilnas naujai sukurto pavadinimo pavyzdys: ***n10_t1_prox_nnu_55***, kur:
 
@@ -48,6 +56,7 @@ Pilnas naujai sukurto pavadinimo pavyzdys: ***n10_t1_prox_nnu_55***, kur:
  - **55** - tiriamojo amžius.
 
 Mėginių vardų pavyzdys realiems duomenims:
+
 ```{r Filename_generation, echo=FALSE, warning=FALSE}
 samples <- read.table("samples.txt", header = TRUE) %>% setDT()
 samples[, graph_name := paste0("n", samples$donor, "_", samples$timepoint, "_",
@@ -61,23 +70,25 @@ write.csv(samples, "samples2.csv")
 ```
 
 # 1. Mėginių hierarchinis klasterizavimas
+
 ```{r}
 ```
 
 # 2. Mėginių atvaizdavimas "heatmap" pavidalu
+
 Kadangi **beta** matrica turi ***`r dim(beta)[1]`*** eilutes bei
 ***`r dim(beta)[2]`*** stulpelius, pavaizduoti visas matricos reikšmes bei,
 atsižvelgus į spalvų intensyvumą ir atspalvį, daryti išvadas apie duomenų
-grupes - klasterius, naudojantis ***heatmap()*** funkcija yra negalima, iš
-eilutes aprašančios matricos buvo atrinktos tik tam tikros eilutės.
+grupes - klasterius, naudojantis ***heatmap()*** funkcija yra negalima,
+iš eilutes aprašančios matricos buvo atrinktos tik tam tikros eilutės.
 
 **Eilučių atrinkimas buvo atliktas, remiantis žemiau pažingsniui aprašyta**
 **logika:**
 
 1. Iš pradžių iš eilutes aprašančios matricos buvo surasti genai (jų
 pavadinimai, remiantis eilutes aprašančios matricos 'UCSC_RefGene_Name'
-stulpeliu), kurie pasikartodavo tarp dviejų chromosomų. Gauti bendrų
-genų dažniai pavaizduoti lentele:
+stulpeliu), kurie pasikartodavo tarp dviejų chromosomų. Gauti bendrų genų
+dažniai pavaizduoti lentele:
 
 ```{r Task_2_1, echo=FALSE, message=FALSE, warning=FALSE}
 # Determining unique 'chr' column values (chromosome names) from the matrix
@@ -111,8 +122,8 @@ genes_only <- genes_only[! genes_only %in% c('')]
 print(table(genes_only))
 ```
 
-2. Turint dažnius buvo suformuotas objektas, suskaičiuojantis
-konkrečių genų dažnius chromosomose.
+2. Turint dažnius buvo suformuotas objektas, suskaičiuojantis konkrečių genų
+dažnius chromosomose.
 
 ```{r Task_2_2, echo=FALSE}
 gene_list <- c(unique(genes_only))
@@ -133,12 +144,12 @@ for (g in 1:length(gene_list)) {
 }
 ```
 
-3. Iš matricos (ji buvo gauta iš data.frame objekto) buvo pašalintos
-eilutės (chromosomos), kuriose nebuvo nustatytas nei vienas genas (visos
-reikšmės eilutėje buvo lygios 0), ir buvo sukurtos stulpelinės diagramos,
+3.  Iš matricos (ji buvo gauta iš data.frame objekto) buvo pašalintos eilutės
+(chromosomos), kuriose nebuvo nustatytas nei vienas genas (visos reikšmės
+eilutėje buvo lygios 0), ir buvo sukurtos stulpelinės diagramos,
 vizualizuojančios, kokiose chromosomose tam tikro geno buvo nustatyta
 daugiausiai.
-    
+
 Modifikacijos įverčiams atvaizduoti ***heatmap*** pavidalu buvo pasirinkta
 chromosoma, turinti didžiausią tam tikro geno raišką.
 
@@ -161,13 +172,13 @@ plot1 <- ggplot(gene_cnts_melt, aes(x = Var2, y = value))+
             labs(title = "Gene expression", x = "Gene",
                  y = "Expression") +
             geom_text(aes(label = value), vjust = -0.5, color = "black",
-                      size = 3)+
+                      size = 3) +
             theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
                   plot.title = element_text(hjust = 0.5, face = "bold"))
 print(plot1)
 ```
 
-Remiantis aukščiau pavaizduotų stulpelinių diagramų duomenimis, **heatmap**
+Remiantis aukščiau pavaizduotų stulpelinių diagramų duomenimis, ***heatmap***
 buvo pasirinkta atvaizduoti **9 chromosomos** ir ***MIR1268A geno***
 modifikacijos duomenis.
 
@@ -210,13 +221,15 @@ color_options <- labels2colors(ages)
 age_colors <- unlist(lapply(colnames(beta_slctd_gene), function(x) { 
 for (age in 1:length(colnames(beta_slctd_gene))) {
   if(grepl(paste0("_", ages[age]), x)) return(color_options[age])
-  print(paste(ages[age], "-->", color_options[age]))
+  #print(paste(ages[age], "-->", color_options[age]))
 }
 }))
 
 annotation_col <- cbind(timepoint, clonic_lct, aspirin, age_colors)
 ```
+
 \pagebreak
+
 Žemiau atvaizduojami modifikacijos įverčiai ***heatmap*** grafiko pavidalu
 prieš atliekant normalizavimą:
 
@@ -257,30 +270,62 @@ legend("left", legend = c("t1 - first year", "t2 - after 10 years",
        title = "Color meanings")
 ```
 
+Apibendrinus gautus rezultatus galima padaryti išvadą, kad net ir sumažinus
+modifikacijos pozicijų skaičių, nagrinėjant tik devintos chromosomos
+***MIR1268A*** geną, negalima įžvelgti aiškių grupių, kurios gali būti
+analizuojamos toliau, ieškant bendrumų tarp grupės objektų.
+
+Siekiant gauti ***heatmap*** grafiką, kuriame galima matyti aiškiai
+susidariusias grupes (klasterius), buvo nuspręsta iš modifikacijos įverčių
+matricos atrinkti 30 variabiliausių pozicijų ir sukurti **heatmap** grafiką
+būtent šioms pozicijoms, pavaizduojant ***heatmap*** grafikus prieš atliekant
+normalizavimą bei atlikus jį.
+
+```{r Task_2_7, echo=FALSE, message=FALSE, warning=FALSE}
+beta_nw <- as.data.frame(beta)
+beta_nw$row_var = rowVars(as.matrix(beta_nw[, c(-1)]))
+
+beta_var <- tail(beta_nw[order(beta_nw$row_var), ], n = 30)
+beta_var$row_var <- NULL
+
+beta_norm_var <- (data.matrix(beta_var) - rowMeans(data.matrix(beta_var))) /
+                              rowSds(data.matrix(beta_var))
+
+col_rnorm = colorRamp2(c(-3, 0, 3), c("#FFFFFF", "#62A5F2", "#073366"))
+
+h1 <- Heatmap(data.matrix(beta_var), cluster_rows = TRUE, col = col_rnorm,
+              cluster_columns = FALSE, show_heatmap_legend = FALSE,
+              show_column_names = FALSE,
+              column_title = "Before standardization")
+
+h2 <- Heatmap(beta_norm_var, cluster_rows = TRUE, col = col_rnorm,
+              cluster_columns = FALSE, column_title = "After standardization",
+              show_column_names = FALSE,
+              heatmap_legend_param = list(title = "Color key"))
+
+plot(h1+h2)
+```
+
+Aukščiau pavaizduotuose ***heatmap*** grafikuose aiškiai matomas spalvų
+pasikeitimas, atlikus modifikacijos pozicijų normalizavimą taip, jog eilučių
+vidurkis būtų lygus 0, o standartinis nuokrypis būtų lygus 1.
+
+Remiantis "Color key" skale galima pastebėti, jog modifikacijos pozicijos,
+kurios prieš atliekant standartizavimą buvo vizualizuojamos šviesesne spalva,
+atlikus standartizavimą buvo pavaizduotos dar šviesesne spalva (reikšmės buvo
+sumažintos). Tuo tarpu modifikacijos pozicijos, kurios prieš normalizavimą buvo
+vaizduojamos tamsesne spalva, po normalizavimo įgijo dar didesnę reikšmę ir
+buvo atvaizduotos dar tamsesne spalva.
+
 # 3. Tikro ir nuspėto amžiaus bei senėjimo "pagreitėjimo" nustatymas
+
 ```{r}
 ```
 
-# Papildomos užduotys
-## 1. t-SNE klasterizavimo metodo pritaikymas
+## Papildomos užduotys
+
+### 1. t-SNE klasterizavimo metodo pritaikymas
 
 ```{r Extra_1, echo=FALSE, message=FALSE, warning=FALSE}
 
-```
-
-## 2. Klasterizavimo pritaikymas pozicijoms
-
-```{r Extra_2, echo=FALSE, message=FALSE, warning=FALSE}
-#selected_data <- annot_row[!is.na(annot_row$CpG_rs), ]
-#df_island <- selected_data[selected_data$Relation_to_Island == "Island",]
-#df_chr <- df_island[df_island$chr == "chr9",]
-#df_mt <- as.data.frame(t(beta[rownames(df_chr), ]))
-
-#dist_mat <- as.dist(1-cor(df_mt))
-#hclust_avg <- hclust(dist_mat, method = 'complete')
-
-#cut_avg <- cutree(hclust_avg, k = 10)
-#plot(hclust_avg, hang = -1, cex = 0.6)
-#rect.hclust(hclust_avg , k = 10, border = 2:6)
-#abline(h = 10, col = 'red')
 ```
