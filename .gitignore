@@ -49,3 +49,6 @@ detectionP.csv
 output.rds
 *.Rdata
 *.rds
+a.R
+3_task.R
+dataframe.csv
