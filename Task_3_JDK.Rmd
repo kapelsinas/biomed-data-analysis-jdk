@@ -199,13 +199,21 @@ p2.Horvath.proximal + p2.Horvath.distal +
 
 ```
 
-Parodoma visų trijų laikrodžių koreliacija.
+Parodoma kuris iš trijų naudojamų laikrodžių yra tiksliausias ir kuris yra mažiausiai tikslus.
+Taip pat parodo koreliacija tarp visų trijų laikrodžių
 
 ```{r}
 
 age.GSE <- DNAmAge(beta,clocks=c("Horvath", "Hannum","Levine"), age = info.clean$age)
 
+Acc <- data.frame( Horvarth = abs(mean(age.GSE$ageAcc.Horvath)),
+                   Hannum = abs(mean(age.GSE$ageAcc.Hannum)),
+                   Levine = abs(mean(age.GSE$ageAcc.Levine)))
 
+# Tiksliausias laikrodis
+colnames(Acc)[max.col(-Acc, ties.method = "first")]
+# Mažiausiai tikslus laikrodisi
+colnames(Acc)[max.col(Acc, ties.method = "first")]
 
 plotCorClocks(age.GSE)
 
