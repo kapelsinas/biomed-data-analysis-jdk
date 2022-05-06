@@ -228,8 +228,8 @@ plot1 <- ggplot(gene_cnts_melt, aes(x = Var2, y = value))+
             geom_bar(stat = 'identity', fill = "#123e68")+
             ylim(0, 1700) +
             facet_wrap(~Var1) +
-            labs(title = "Gene expression", x = "Gene",
-                 y = "Expression") +
+            labs(title = "Gene occurrence", x = "Gene",
+                 y = "Occurrence") +
             geom_text(aes(label = value), vjust = -0.5, color = "black",
                       size = 3) +
             theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
@@ -380,6 +380,9 @@ tamsesne spalva.
 
 # 3. Tikro ir nuspėto amžiaus bei senėjimo "pagreitėjimo" nustatymas
 
+Žemiau vaizduojami skirtingi **t1** laiko žymės laikrodžiai su
+skirtingais žarnų tipais:
+
 ```{r Task_3_1, echo=FALSE, message=FALSE, warning=FALSE}
 age.all <- DNAmAge(beta, clocks = c("Horvath", "Hannum", "Levine"))
 # Creating objects that save needed 'timepoint' and 'clonic location' data:
@@ -417,7 +420,12 @@ p1.Hannum.distal <- plotDNAmAge(age.t1.distal$Hannum, info.t1.distal$age,
                                 tit = "Hannum method (distal)")
 p1.Levine.distal <- plotDNAmAge(age.t1.distal$Levine, info.t1.distal$age,
                                 tit = "Levine method (distal)")
+```
 
+Žemiau vaizduojami skirtingi **t2** laiko žymės laikrodžiai su
+skirtingais žarnų tipais:
+
+```{r Task_3_2, echo=FALSE, message=FALSE, warning=FALSE}
 # Timepoint - t2:
 p2.Horvath.proximal <- plotDNAmAge(age.t2.proximal$Horvath, info.t2.proximal$age,
                                    tit = "Horvath method (proximal)")
@@ -446,7 +454,7 @@ p2.Horvath.proximal + p2.Horvath.distal + p2.Hannum.proximal +
 
 \pagebreak
 
-```{r Task_3_2, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_3_3, echo=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
 age.GSE <- DNAmAge(beta, clocks = c("Horvath", "Hannum","Levine"),
                    age = info.clean$age)
@@ -470,7 +478,7 @@ kurio vidurkis yra lygus ***`r LeastAcc`***.
 
 Žemiau yra vaizduojama koreliacija tarp visų trijų laikrodžių.
 
-```{r Task_3_3, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_3_4, echo=FALSE, message=FALSE, warning=FALSE}
 plotCorClocks(age.GSE)
 ```
 \pagebreak
@@ -478,7 +486,7 @@ plotCorClocks(age.GSE)
 Žemiau esančiuose grafikuose vaizduojama, kaip nuspėti amžiai skiriasi
 tarp aspiriną vartojančių ir jo nevartojančių.
 
-```{r Task_3_4, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_3_5, echo=FALSE, message=FALSE, warning=FALSE}
 tit = "Horvath method"
 xx = "DNA Methylation Age"
 yy <- "Chronological Age"
