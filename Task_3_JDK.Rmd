@@ -1,7 +1,7 @@
 ---
 title: "Praktinė užduotis Nr. 2"
 author: "Jaroslav Rutkovskij, Danielė Stasiūnaitė, Karolis Augustauskas (JDK)"
-date: "4/24/2022"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
 output:
   pdf_document: default
   html_document:
@@ -18,7 +18,7 @@ library(pacman)
 p_load(Signac, dplyr, heatmaply, reshape2, ggplot2, data.table, matrixStats,
        WGCNA, ggpubr, tidyverse, palmerpenguins, Rtsne, methylclockData,
        methylclock, ComplexHeatmap, hrbrthemes, dendextend, RColorBrewer,
-       Heatplus, gplots, heatmap3, patchwork)
+       Heatplus, gplots, heatmap3, patchwork, circlize)
 
 enableWGCNAThreads()
 set.seed(1973)
@@ -71,12 +71,17 @@ Mėginių vardų pavyzdys realiems duomenims:
 
 ```{r Filename_generation, echo=FALSE, warning=FALSE}
 samples <- read.table("samples.txt", header = TRUE) %>% setDT()
-samples[, graph_name := paste0("n", samples$donor, "_", samples$timepoint, "_",
+samples <- samples[samples$Basename %in% colnames(beta),]
+# Sort samples by beta
+samples <- samples[order(match(samples$Basename, colnames(beta))),]
+samples$graph_name <- paste0("n", samples$donor, "_", samples$timepoint, "_",
                                substring(samples$clonic_location, 1, 4), "_",
                                paste0(substring(samples$aspirin, 1, 1),
                                       substring(samples$aspirin, 3, 4)), "_",
-                               samples$age)]
+                               samples$age)
+
 colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
+
 head(beta[, 1:2], n = 3)
 write.csv(samples, "samples2.csv")
 ```
@@ -179,7 +184,7 @@ print(table(genes_only))
 2.  Turint dažnius buvo suformuotas objektas, suskaičiuojantis konkrečių
     genų dažnius chromosomose.
 
-```{r Task_2_2, echo=FALSE}
+```{r Task_2_3, echo=FALSE}
 gene_list <- c(unique(genes_only))
 gene_cnts <- data.frame(chr = chr_names)  # gene_conts --> gene count dataframe
 
@@ -207,7 +212,7 @@ for (g in 1:length(gene_list)) {
 Modifikacijos įverčiams atvaizduoti ***heatmap*** pavidalu buvo
 pasirinkta chromosoma, turinti didžiausią tam tikro geno raišką.
 
-```{r Task_2_3, echo=FALSE, warning=FALSE}
+```{r Task_2_4, echo=FALSE, warning=FALSE}
 gene_cmt <- data.matrix(gene_cnts)     # gene_cmt --> gene count matrix
 gene_cmt <- gene_cmt[ , 2:length(colnames(gene_cmt))]
 
@@ -223,8 +228,8 @@ plot1 <- ggplot(gene_cnts_melt, aes(x = Var2, y = value))+
             geom_bar(stat = 'identity', fill = "#123e68")+
             ylim(0, 1700) +
             facet_wrap(~Var1) +
-            labs(title = "Gene expression", x = "Gene",
-                 y = "Expression") +
+            labs(title = "Gene occurrence", x = "Gene",
+                 y = "Occurrence") +
             geom_text(aes(label = value), vjust = -0.5, color = "black",
                       size = 3) +
             theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
@@ -236,7 +241,7 @@ Remiantis aukščiau pavaizduotų stulpelinių diagramų duomenimis,
 ***heatmap*** buvo pasirinkta atvaizduoti **9 chromosomos** ir
 ***MIR1268A geno*** modifikacijos duomenis.
 
-```{r Task_2_4, warning=FALSE, include=FALSE}
+```{r Task_2_5, warning=FALSE, include=FALSE}
 chr <- "chr9"
 gene <- "MIR1268A"
 
@@ -287,7 +292,7 @@ annotation_col <- cbind(timepoint, clonic_lct, aspirin, age_colors)
 Žemiau atvaizduojami modifikacijos įverčiai ***heatmap*** grafiko
 pavidalu prieš atliekant normalizavimą:
 
-```{r Task_2_5, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_2_6, echo=FALSE, message=FALSE, warning=FALSE}
 heatmap3(beta_slctd_gene, col = magma(length(beta_slctd_gene)),
          cexRow = 0.8, cexCol = 0.5, margins = c(10, 5), scale = "row",
          ColSideColors = annotation_col, showRowDendro = F,
@@ -303,11 +308,12 @@ legend("left", legend = c("t1 - first year", "t2 - after 10 years",
                "#5EDA21"), lty= 1, lwd = 10, bty = "n", cex = 0.6,
        title = "Color meanings")
 ```
+\pagebreak
 
 Žemiau atvaizduojami modifikacijos įverčiai ***heatmap*** grafiko
 pavidalu atlikus normalizavimą:
 
-```{r Task_2_6, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_2_7, echo=FALSE, message=FALSE, warning=FALSE}
 heatmap3(normalized_beta, col = magma(length(normalized_beta)),
          cexRow = 0.8, cexCol = 0.5, margins = c(10, 5), scale = "row",
          ColSideColors = annotation_col, showRowDendro = F,
@@ -335,7 +341,7 @@ susidariusias grupes (klasterius), buvo nuspręsta iš modifikacijos
 **heatmap** grafiką būtent šioms pozicijoms, pavaizduojant ***heatmap***
 grafikus prieš atliekant normalizavimą bei atlikus jį.
 
-```{r Task_2_7, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_2_8, echo=FALSE, message=FALSE, warning=FALSE, fig.show='hold', out.width='70%', fig.align = 'center'}
 beta_nw <- as.data.frame(beta)
 beta_nw$row_var = rowVars(as.matrix(beta_nw[, c(-1)]))
 
@@ -372,16 +378,16 @@ pozicijos, kurios prieš normalizavimą buvo vaizduojamos tamsesne spalva,
 po normalizavimo įgijo dar didesnę reikšmę ir buvo atvaizduotos dar
 tamsesne spalva.
 
-\pagebreak
-
 # 3. Tikro ir nuspėto amžiaus bei senėjimo "pagreitėjimo" nustatymas
+
+Žemiau vaizduojami skirtingi **t1** laiko žymės laikrodžiai su
+skirtingais žarnų tipais:
 
 ```{r Task_3_1, echo=FALSE, message=FALSE, warning=FALSE}
 age.all <- DNAmAge(beta, clocks = c("Horvath", "Hannum", "Levine"))
-
 # Creating objects that save needed 'timepoint' and 'clonic location' data:
 vec <- colnames(beta)
-info.clean <-info[info$basename %in% vec, ]
+info.clean <-samples[samples$graph_name %in% vec, ]
 info.t1 <- info.clean[info.clean$timepoint == "t1", ]
 info.t1.proximal <- info.t1[info.t1$clonic_location == "proximal", ]
 info.t1.distal <- info.t1[info.t1$clonic_location == "distal", ]
@@ -390,13 +396,13 @@ info.t2.proximal <- info.t1[info.t1$clonic_location == "proximal", ]
 info.t2.distal <- info.t1[info.t1$clonic_location == "distal", ]
 
 # Using age.all object to extract 't1'/'t2' and 'distal'/'proximal':
-vec.t1 <- info.t1.proximal$basename
+vec.t1 <- info.t1.proximal$graph_name
 age.t1.proximal <- age.all[age.all$id %in% vec.t1, ]
-vec.t1 <- info.t1.distal$basename
+vec.t1 <- info.t1.distal$graph_name
 age.t1.distal <- age.all[age.all$id %in% vec.t1, ]
-vec.t2 <- info.t2.proximal$basename
+vec.t2 <- info.t2.proximal$graph_name
 age.t2.proximal <- age.all[age.all$id %in% vec.t2, ]
-vec.t2 <- info.t2.distal$basename
+vec.t2 <- info.t2.distal$graph_name
 age.t2.distal <- age.all[age.all$id %in% vec.t2, ]
 
 # Representing the clocks with different timepoints and clonic locations.
@@ -408,26 +414,31 @@ p1.Hannum.proximal <- plotDNAmAge(age.t1.proximal$Hannum, info.t1.proximal$age,
 p1.Levine.proximal <- plotDNAmAge(age.t1.proximal$Levine, info.t1.proximal$age,
                                   tit = "Levine method (proximal)")
 
-p1.Horvath.distal <- plotDNAmAge(age.t1.distal$Horvath, info.t2.distal$age,
+p1.Horvath.distal <- plotDNAmAge(age.t1.distal$Horvath, info.t1.distal$age,
                                  tit = "Horvath method (distal)")
 p1.Hannum.distal <- plotDNAmAge(age.t1.distal$Hannum, info.t1.distal$age,
                                 tit = "Hannum method (distal)")
-p1.Levine.distal <- plotDNAmAge(age.t1.distal$Levine, info.t2.distal$age,
+p1.Levine.distal <- plotDNAmAge(age.t1.distal$Levine, info.t1.distal$age,
                                 tit = "Levine method (distal)")
+```
 
+Žemiau vaizduojami skirtingi **t2** laiko žymės laikrodžiai su
+skirtingais žarnų tipais:
+
+```{r Task_3_2, echo=FALSE, message=FALSE, warning=FALSE}
 # Timepoint - t2:
 p2.Horvath.proximal <- plotDNAmAge(age.t2.proximal$Horvath, info.t2.proximal$age,
                                    tit = "Horvath method (proximal)")
-p2.Hannum.proximal <- plotDNAmAge(age.t2.proximal$Hannum, info.t1$age,
+p2.Hannum.proximal <- plotDNAmAge(age.t2.proximal$Hannum, info.t2.proximal$age,
                                   tit = "Hannum method (proximal)")
-p2.Levine.proximal <- plotDNAmAge(age.t2.proximal$Levine, info.t1$age,
+p2.Levine.proximal <- plotDNAmAge(age.t2.proximal$Levine, info.t2.proximal$age,
                                   tit = "Levine method (proximal)")
 
 p2.Horvath.distal <- plotDNAmAge(age.t2.distal$Horvath, info.t2.distal$age,
                                  tit = "Horvath method (distal)")
-p2.Hannum.distal <- plotDNAmAge(age.t2.distal$Hannum, info.t2$age,
+p2.Hannum.distal <- plotDNAmAge(age.t2.distal$Hannum, info.t2.distal$age,
                                 tit = "Hannum method (distal)")
-p2.Levine.distal <- plotDNAmAge(age.t2.distal$Levine, info.t2$age,
+p2.Levine.distal <- plotDNAmAge(age.t2.distal$Levine, info.t2.distal$age,
                                 tit = "Levine method (distal)")
 
 p1.Horvath.proximal + p1.Horvath.distal + p1.Hannum.proximal +
@@ -443,7 +454,8 @@ p2.Horvath.proximal + p2.Horvath.distal + p2.Hannum.proximal +
 
 \pagebreak
 
-```{r Task_3_2, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_3_3, echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
 age.GSE <- DNAmAge(beta, clocks = c("Horvath", "Hannum","Levine"),
                    age = info.clean$age)
 
@@ -453,11 +465,9 @@ Acc <- data.frame(Horvarth = abs(mean(age.GSE$ageAcc.Horvath)),
 
 # The most precise clock:
 MostAcc <- colnames(Acc)[max.col(-Acc, ties.method = "first")]
-MostAcc
 
 # The least precise clock:
 LeastAcc <- colnames(Acc)[max.col(Acc, ties.method = "first")]
-LeastAcc
 ```
 
 Parodoma, kuris iš trijų naudojamų laikrodžių yra tiksliausias ir kuris
@@ -468,14 +478,15 @@ kurio vidurkis yra lygus ***`r LeastAcc`***.
 
 Žemiau yra vaizduojama koreliacija tarp visų trijų laikrodžių.
 
-```{r Task_3_3, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_3_4, echo=FALSE, message=FALSE, warning=FALSE}
 plotCorClocks(age.GSE)
 ```
+\pagebreak
 
 Žemiau esančiuose grafikuose vaizduojama, kaip nuspėti amžiai skiriasi
 tarp aspiriną vartojančių ir jo nevartojančių.
 
-```{r Task_3_4, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_3_5, echo=FALSE, message=FALSE, warning=FALSE}
 tit = "Horvath method"
 xx = "DNA Methylation Age"
 yy <- "Chronological Age"
