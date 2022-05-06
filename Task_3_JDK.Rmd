@@ -308,6 +308,7 @@ legend("left", legend = c("t1 - first year", "t2 - after 10 years",
                "#5EDA21"), lty= 1, lwd = 10, bty = "n", cex = 0.6,
        title = "Color meanings")
 ```
+
 \pagebreak
 
 Žemiau atvaizduojami modifikacijos įverčiai ***heatmap*** grafiko
@@ -378,6 +379,8 @@ pozicijos, kurios prieš normalizavimą buvo vaizduojamos tamsesne spalva,
 po normalizavimo įgijo dar didesnę reikšmę ir buvo atvaizduotos dar
 tamsesne spalva.
 
+\pagebreak
+
 # 3. Tikro ir nuspėto amžiaus bei senėjimo "pagreitėjimo" nustatymas
 
 Žemiau vaizduojami skirtingi **t1** laiko žymės laikrodžiai su
@@ -426,6 +429,8 @@ p1.Horvath.proximal + p1.Horvath.distal + p1.Hannum.proximal +
 
   plot_layout(ncol = 2)
 ```
+
+\pagebreak
 
 Žemiau vaizduojami skirtingi **t2** laiko žymės laikrodžiai su
 skirtingais žarnų tipais:
@@ -481,6 +486,7 @@ kurio vidurkis yra lygus ***`r LeastAcc`***.
 ```{r Task_3_4, echo=FALSE, message=FALSE, warning=FALSE}
 plotCorClocks(age.GSE)
 ```
+
 \pagebreak
 
 Žemiau esančiuose grafikuose vaizduojama, kaip nuspėti amžiai skiriasi
