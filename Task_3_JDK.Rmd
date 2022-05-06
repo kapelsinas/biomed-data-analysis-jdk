@@ -408,26 +408,26 @@ p1.Hannum.proximal <- plotDNAmAge(age.t1.proximal$Hannum, info.t1.proximal$age,
 p1.Levine.proximal <- plotDNAmAge(age.t1.proximal$Levine, info.t1.proximal$age,
                                   tit = "Levine method (proximal)")
 
-p1.Horvath.distal <- plotDNAmAge(age.t1.distal$Horvath, info.t2.distal$age,
+p1.Horvath.distal <- plotDNAmAge(age.t1.distal$Horvath, info.t1.distal$age,
                                  tit = "Horvath method (distal)")
 p1.Hannum.distal <- plotDNAmAge(age.t1.distal$Hannum, info.t1.distal$age,
                                 tit = "Hannum method (distal)")
-p1.Levine.distal <- plotDNAmAge(age.t1.distal$Levine, info.t2.distal$age,
+p1.Levine.distal <- plotDNAmAge(age.t1.distal$Levine, info.t1.distal$age,
                                 tit = "Levine method (distal)")
 
 # Timepoint - t2:
 p2.Horvath.proximal <- plotDNAmAge(age.t2.proximal$Horvath, info.t2.proximal$age,
                                    tit = "Horvath method (proximal)")
-p2.Hannum.proximal <- plotDNAmAge(age.t2.proximal$Hannum, info.t1$age,
+p2.Hannum.proximal <- plotDNAmAge(age.t2.proximal$Hannum, info.t2.proximal$age,
                                   tit = "Hannum method (proximal)")
-p2.Levine.proximal <- plotDNAmAge(age.t2.proximal$Levine, info.t1$age,
+p2.Levine.proximal <- plotDNAmAge(age.t2.proximal$Levine, info.t2.proximal$age,
                                   tit = "Levine method (proximal)")
 
 p2.Horvath.distal <- plotDNAmAge(age.t2.distal$Horvath, info.t2.distal$age,
                                  tit = "Horvath method (distal)")
-p2.Hannum.distal <- plotDNAmAge(age.t2.distal$Hannum, info.t2$age,
+p2.Hannum.distal <- plotDNAmAge(age.t2.distal$Hannum, info.t2.distal$age,
                                 tit = "Hannum method (distal)")
-p2.Levine.distal <- plotDNAmAge(age.t2.distal$Levine, info.t2$age,
+p2.Levine.distal <- plotDNAmAge(age.t2.distal$Levine, info.t2.distal$age,
                                 tit = "Levine method (distal)")
 
 p1.Horvath.proximal + p1.Horvath.distal + p1.Hannum.proximal +
