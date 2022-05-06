@@ -420,6 +420,11 @@ p1.Hannum.distal <- plotDNAmAge(age.t1.distal$Hannum, info.t1.distal$age,
                                 tit = "Hannum method (distal)")
 p1.Levine.distal <- plotDNAmAge(age.t1.distal$Levine, info.t1.distal$age,
                                 tit = "Levine method (distal)")
+
+p1.Horvath.proximal + p1.Horvath.distal + p1.Hannum.proximal +
+  p1.Hannum.distal + p1.Levine.proximal + p1.Levine.distal +
+
+  plot_layout(ncol = 2)
 ```
 
 Žemiau vaizduojami skirtingi **t2** laiko žymės laikrodžiai su
@@ -440,11 +445,6 @@ p2.Hannum.distal <- plotDNAmAge(age.t2.distal$Hannum, info.t2.distal$age,
                                 tit = "Hannum method (distal)")
 p2.Levine.distal <- plotDNAmAge(age.t2.distal$Levine, info.t2.distal$age,
                                 tit = "Levine method (distal)")
-
-p1.Horvath.proximal + p1.Horvath.distal + p1.Hannum.proximal +
-  p1.Hannum.distal + p1.Levine.proximal + p1.Levine.distal +
-
-  plot_layout(ncol = 2)
 
 p2.Horvath.proximal + p2.Horvath.distal + p2.Hannum.proximal +
   p2.Hannum.distal + p2.Levine.proximal + p2.Levine.distal +
