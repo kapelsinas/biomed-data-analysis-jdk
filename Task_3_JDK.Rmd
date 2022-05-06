@@ -179,7 +179,7 @@ print(table(genes_only))
 2.  Turint dažnius buvo suformuotas objektas, suskaičiuojantis konkrečių
     genų dažnius chromosomose.
 
-```{r Task_2_2, echo=FALSE}
+```{r Task_2_3, echo=FALSE}
 gene_list <- c(unique(genes_only))
 gene_cnts <- data.frame(chr = chr_names)  # gene_conts --> gene count dataframe
 
@@ -207,7 +207,7 @@ for (g in 1:length(gene_list)) {
 Modifikacijos įverčiams atvaizduoti ***heatmap*** pavidalu buvo
 pasirinkta chromosoma, turinti didžiausią tam tikro geno raišką.
 
-```{r Task_2_3, echo=FALSE, warning=FALSE}
+```{r Task_2_4, echo=FALSE, warning=FALSE}
 gene_cmt <- data.matrix(gene_cnts)     # gene_cmt --> gene count matrix
 gene_cmt <- gene_cmt[ , 2:length(colnames(gene_cmt))]
 
@@ -236,7 +236,7 @@ Remiantis aukščiau pavaizduotų stulpelinių diagramų duomenimis,
 ***heatmap*** buvo pasirinkta atvaizduoti **9 chromosomos** ir
 ***MIR1268A geno*** modifikacijos duomenis.
 
-```{r Task_2_4, warning=FALSE, include=FALSE}
+```{r Task_2_5, warning=FALSE, include=FALSE}
 chr <- "chr9"
 gene <- "MIR1268A"
 
@@ -287,7 +287,7 @@ annotation_col <- cbind(timepoint, clonic_lct, aspirin, age_colors)
 Žemiau atvaizduojami modifikacijos įverčiai ***heatmap*** grafiko
 pavidalu prieš atliekant normalizavimą:
 
-```{r Task_2_5, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_2_6, echo=FALSE, message=FALSE, warning=FALSE}
 heatmap3(beta_slctd_gene, col = magma(length(beta_slctd_gene)),
          cexRow = 0.8, cexCol = 0.5, margins = c(10, 5), scale = "row",
          ColSideColors = annotation_col, showRowDendro = F,
@@ -307,7 +307,7 @@ legend("left", legend = c("t1 - first year", "t2 - after 10 years",
 Žemiau atvaizduojami modifikacijos įverčiai ***heatmap*** grafiko
 pavidalu atlikus normalizavimą:
 
-```{r Task_2_6, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_2_7, echo=FALSE, message=FALSE, warning=FALSE}
 heatmap3(normalized_beta, col = magma(length(normalized_beta)),
          cexRow = 0.8, cexCol = 0.5, margins = c(10, 5), scale = "row",
          ColSideColors = annotation_col, showRowDendro = F,
@@ -335,7 +335,7 @@ susidariusias grupes (klasterius), buvo nuspręsta iš modifikacijos
 **heatmap** grafiką būtent šioms pozicijoms, pavaizduojant ***heatmap***
 grafikus prieš atliekant normalizavimą bei atlikus jį.
 
-```{r Task_2_7, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_2_8, echo=FALSE, message=FALSE, warning=FALSE}
 beta_nw <- as.data.frame(beta)
 beta_nw$row_var = rowVars(as.matrix(beta_nw[, c(-1)]))
 
@@ -408,26 +408,26 @@ p1.Hannum.proximal <- plotDNAmAge(age.t1.proximal$Hannum, info.t1.proximal$age,
 p1.Levine.proximal <- plotDNAmAge(age.t1.proximal$Levine, info.t1.proximal$age,
                                   tit = "Levine method (proximal)")
 
-p1.Horvath.distal <- plotDNAmAge(age.t1.distal$Horvath, info.t2.distal$age,
+p1.Horvath.distal <- plotDNAmAge(age.t1.distal$Horvath, info.t1.distal$age,
                                  tit = "Horvath method (distal)")
 p1.Hannum.distal <- plotDNAmAge(age.t1.distal$Hannum, info.t1.distal$age,
                                 tit = "Hannum method (distal)")
-p1.Levine.distal <- plotDNAmAge(age.t1.distal$Levine, info.t2.distal$age,
+p1.Levine.distal <- plotDNAmAge(age.t1.distal$Levine, info.t1.distal$age,
                                 tit = "Levine method (distal)")
 
 # Timepoint - t2:
 p2.Horvath.proximal <- plotDNAmAge(age.t2.proximal$Horvath, info.t2.proximal$age,
                                    tit = "Horvath method (proximal)")
-p2.Hannum.proximal <- plotDNAmAge(age.t2.proximal$Hannum, info.t1$age,
+p2.Hannum.proximal <- plotDNAmAge(age.t2.proximal$Hannum, info.t2.proximal$age,
                                   tit = "Hannum method (proximal)")
-p2.Levine.proximal <- plotDNAmAge(age.t2.proximal$Levine, info.t1$age,
+p2.Levine.proximal <- plotDNAmAge(age.t2.proximal$Levine, info.t2.proximal$age,
                                   tit = "Levine method (proximal)")
 
 p2.Horvath.distal <- plotDNAmAge(age.t2.distal$Horvath, info.t2.distal$age,
                                  tit = "Horvath method (distal)")
-p2.Hannum.distal <- plotDNAmAge(age.t2.distal$Hannum, info.t2$age,
+p2.Hannum.distal <- plotDNAmAge(age.t2.distal$Hannum, info.t2.distal$age,
                                 tit = "Hannum method (distal)")
-p2.Levine.distal <- plotDNAmAge(age.t2.distal$Levine, info.t2$age,
+p2.Levine.distal <- plotDNAmAge(age.t2.distal$Levine, info.t2.distal$age,
                                 tit = "Levine method (distal)")
 
 p1.Horvath.proximal + p1.Horvath.distal + p1.Hannum.proximal +
