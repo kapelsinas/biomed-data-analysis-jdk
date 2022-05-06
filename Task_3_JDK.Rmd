@@ -457,11 +457,9 @@ Acc <- data.frame(Horvarth = abs(mean(age.GSE$ageAcc.Horvath)),
 
 # The most precise clock:
 MostAcc <- colnames(Acc)[max.col(-Acc, ties.method = "first")]
-MostAcc
 
 # The least precise clock:
 LeastAcc <- colnames(Acc)[max.col(Acc, ties.method = "first")]
-LeastAcc
 ```
 
 Parodoma, kuris iš trijų naudojamų laikrodžių yra tiksliausias ir kuris
