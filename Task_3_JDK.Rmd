@@ -308,6 +308,7 @@ legend("left", legend = c("t1 - first year", "t2 - after 10 years",
                "#5EDA21"), lty= 1, lwd = 10, bty = "n", cex = 0.6,
        title = "Color meanings")
 ```
+\pagebreak
 
 Žemiau atvaizduojami modifikacijos įverčiai ***heatmap*** grafiko
 pavidalu atlikus normalizavimą:
@@ -340,7 +341,7 @@ susidariusias grupes (klasterius), buvo nuspręsta iš modifikacijos
 **heatmap** grafiką būtent šioms pozicijoms, pavaizduojant ***heatmap***
 grafikus prieš atliekant normalizavimą bei atlikus jį.
 
-```{r Task_2_8, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Task_2_8, echo=FALSE, message=FALSE, warning=FALSE, fig.show='hold', out.width='70%', fig.align = 'center'}
 beta_nw <- as.data.frame(beta)
 beta_nw$row_var = rowVars(as.matrix(beta_nw[, c(-1)]))
 
@@ -380,7 +381,6 @@ tamsesne spalva.
 # 3. Tikro ir nuspėto amžiaus bei senėjimo "pagreitėjimo" nustatymas
 
 ```{r Task_3_1, echo=FALSE, message=FALSE, warning=FALSE}
-knitr::opts_chunk$set(fig.height = 10, fig.width = 16)
 age.all <- DNAmAge(beta, clocks = c("Horvath", "Hannum", "Levine"))
 # Creating objects that save needed 'timepoint' and 'clonic location' data:
 vec <- colnames(beta)
@@ -473,6 +473,7 @@ kurio vidurkis yra lygus ***`r LeastAcc`***.
 ```{r Task_3_3, echo=FALSE, message=FALSE, warning=FALSE}
 plotCorClocks(age.GSE)
 ```
+\pagebreak
 
 Žemiau esančiuose grafikuose vaizduojama, kaip nuspėti amžiai skiriasi
 tarp aspiriną vartojančių ir jo nevartojančių.
