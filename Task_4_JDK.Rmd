@@ -44,10 +44,8 @@ aspirin_users <- samples[samples$aspirin == 'longterm', ]$graph_name
 # Extracting matrix columns that store aspirin non-user modification values
 # (from beta matrix):
 beta_nonusers <- beta[, colnames(beta) %in% aspirin_nonusers]
-#beta_nonusers
 
 # Extracting matrix columns that store aspirin non-user modification values
 # (from beta matrix):
 beta_users <- beta[, colnames(beta) %in% aspirin_users]
-#beta_users
 ```
