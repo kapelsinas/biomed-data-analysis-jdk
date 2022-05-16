@@ -1,0 +1,53 @@
+---
+title: "Praktinė užduotis Nr. 3"
+author: "Jaroslav Rutkovskij, Danielė Stasiūnaitė, Karolis Augustauskas (JDK)"
+date: "`r format(Sys.time(), '%d/%m/%y')`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+subtitle: Hipotezių testavimas
+---
+
+```{r Figure_size, include=FALSE}
+knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
+```
+
+```{r Preparations, warning=FALSE, include=FALSE}
+library(pacman)
+p_load(dplyr)
+```
+
+```{r Data_access, warning=FALSE, include=FALSE}
+beta <- readRDS("dat8.Rds")               # Modification value matrix
+colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
+
+pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
+annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
+samples <- read.csv("samples2.csv")
+```
+### APRAŠYMO VIETA ###
+# Aprašyti, kiek moterų įeina į aspiriną vartojančių ir aspirino nevartojančių
+# moterų grupes (atlikus ankstesnes užduotis dalis mėginių buvo pašalinta, tad
+# dabar aspiriną vartojančių ir nevartojančių moterų skaičius yra pakitęs)!!!
+
+# Pateikti lentelę, kiek moterų įeina į asprino nevartojančių ir aspiriną
+# vartojančių moterų grupes (prieš ir po (čia turima omenyje, kiek moterų įėjo
+# į tas pačias grupes prieš mėginių šalinimą ir atlikus mėginių šalinimą))
+```{r Aspirin_user/nonuser_selection}
+# Extracting data frame rows that describe aspirin non-users:
+aspirin_nonusers <- samples[samples$aspirin == 'nonuser', ]$graph_name
+
+# Extracting data frame rows that describe aspirin longterm users:
+aspirin_users <- samples[samples$aspirin == 'longterm', ]$graph_name
+
+# Extracting matrix columns that store aspirin non-user modification values
+# (from beta matrix):
+beta_nonusers <- beta[, colnames(beta) %in% aspirin_nonusers]
+#beta_nonusers
+
+# Extracting matrix columns that store aspirin non-user modification values
+# (from beta matrix):
+beta_users <- beta[, colnames(beta) %in% aspirin_users]
+#beta_users
+```
