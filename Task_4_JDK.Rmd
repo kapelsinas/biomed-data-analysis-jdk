@@ -15,7 +15,7 @@ knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
 
 ```{r Preparations, warning=FALSE, include=FALSE}
 library(pacman)
-p_load(dplyr, ggplot2)
+p_load(dplyr, ggplot2, reshape2, reshape, randomcoloR)
 ```
 
 ```{r Data_access, warning=FALSE, include=FALSE}
@@ -90,7 +90,7 @@ effect_sizes <- effect_sizes %>% setNames(., c("Position", "Effect_size"))
 
 # Paaiškinti, ką atvaizduoja ši histograma, interpretuoti ją ir panašiai.
 
-```{r Plot_preparations}
+```{r P_value_histogram}
 values <- as.numeric(pvalues$P_value)
 p_df <- data.frame(positions = c(pvalues$Position), pvals = values)
 
@@ -107,5 +107,59 @@ p1 <- ggplot(p_df, aes(x = pvals)) +
                                               colour = "#05076a"), 
               panel.grid.minor = element_line(size = 0.1, linetype = 'dashed',
                                               colour = "#05076a"))
-p1
+print(p1)
 ```
+
+# Pakomentuoti, koks veiksmas buvo padarytas toliau, kodėl jis buvo daromas bei
+# koks rezultatas buvo gautas.
+
+```{r Min_p_value_visualization}
+# Ordering a p-value dataframe and extracting 5 rows with the lowest p-value:
+#min_Ps <- p_df[order(p_df$pvals),][1:5,]
+
+# Determining position names that have the lowest p-values:
+position_names <- p_df[order(p_df$pvals),][1:5,]$positions
+
+nonuser_len <- length(colnames(beta_nonusers))
+user_len <- length(colnames(beta_users))
+
+# Creating dataframes with modification values of 5 positions (cg01760763,
+# cg20768358, cg07179016, cg14510359, cg04083753):
+anon_users <- beta_nonusers[position_names, ] %>%
+                `colnames<-`(c(rep("Aspirin_nonusers", nonuser_len))) %>%
+                melt()
+
+a_users <- beta_users[position_names, ] %>%
+              `colnames<-`(c(rep("Aspirin_users", user_len))) %>%
+              melt()
+
+# Combining two dataframes (of aspirin non-users and aspirin users) into one:
+group_modifications <- rbind(anon_users, a_users) %>%
+                          setNames(., c("Position", "User_nonuser",
+                                   "Modification_value"))
+
+p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
+                                      color = Position)) +
+        geom_point() +
+        labs(title = "DNA modification values",
+             subtitle = "5 positions with the lowest p values",
+             x = "Aspirin user/non-user", y = "Modification value") +
+        facet_grid(. ~ Position) +
+        theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8),
+              plot.title = element_text(hjust = 0.5, face = "bold"),
+              plot.subtitle = element_text(hjust = 0.5, face = "bold"),
+              panel.background = element_rect(colour = "#05076a", size = 0.5,
+                                              fill = "#eaeafd",
+                                              linetype = "solid"),
+              panel.grid.major = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#05076a"), 
+              panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#05076a"),
+              strip.background = element_rect(fill = "#2f4581"),
+              strip.text = element_text(color = "white", face = "bold"),
+              legend.position = "none")
+
+print(p2 + scale_color_brewer(palette = "Set1"))
+```
+
+
