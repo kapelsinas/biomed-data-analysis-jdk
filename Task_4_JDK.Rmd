@@ -15,17 +15,19 @@ knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
 
 ```{r Preparations, warning=FALSE, include=FALSE}
 library(pacman)
-p_load(dplyr)
+p_load(dplyr, matrixStats, rstatix)
 ```
 
 ```{r Data_access, warning=FALSE, include=FALSE}
 beta <- readRDS("dat8.Rds")               # Modification value matrix
-colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 
 pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
 annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
+
+colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 ```
+
 ### APRAŠYMO VIETA ###
 # Aprašyti, kiek moterų įeina į aspiriną vartojančių ir aspirino nevartojančių
 # moterų grupes (atlikus ankstesnes užduotis dalis mėginių buvo pašalinta, tad
@@ -34,6 +36,7 @@ samples <- read.csv("samples2.csv")
 # Pateikti lentelę, kiek moterų įeina į asprino nevartojančių ir aspiriną
 # vartojančių moterų grupes (prieš ir po (čia turima omenyje, kiek moterų įėjo
 # į tas pačias grupes prieš mėginių šalinimą ir atlikus mėginių šalinimą))
+
 ```{r Aspirin_user/nonuser_selection}
 # Extracting data frame rows that describe aspirin non-users:
 aspirin_nonusers <- samples[samples$aspirin == 'nonuser', ]$graph_name
@@ -44,10 +47,42 @@ aspirin_users <- samples[samples$aspirin == 'longterm', ]$graph_name
 # Extracting matrix columns that store aspirin non-user modification values
 # (from beta matrix):
 beta_nonusers <- beta[, colnames(beta) %in% aspirin_nonusers]
-#beta_nonusers
 
 # Extracting matrix columns that store aspirin non-user modification values
 # (from beta matrix):
 beta_users <- beta[, colnames(beta) %in% aspirin_users]
-#beta_users
+```
+
+# T.test. Reikalingas trumpas paaiškinimas, kodėl jį atliekam ir ką
+# jis duoda (aiškinti kaip medikui, o ne kaip dėstytojui).
+
+# Efekto dydžio skaičiavimas. Truputį aprašyti, kas tas efekto dydis,
+# kodėl jį atliekam ir nurodyti, kad yra toks Cohen's d testas, leidžiantis
+# apskaičiuoti efekto dydį. Jokių būdu neaprašinėti techniškai, bet aiškiai
+# ir suprantamai, paaiškinant pagrindinę esmę.
+
+```{r T_test_performance}
+# Creating an empty dataframes that will store p values and effect sizes
+# for each position:
+pvalues <- data.frame()
+effect_sizes <- data.frame()
+
+# Running a loop that performs t-test, effect size calculations and appends
+# p-values, effect size values into dataframes:
+for (row in 1:nrows(beta)) {
+  vec1 <- c(beta_nonusers[row, ])
+  vec2 <- c(beta_users[row, ])
+  rowname <- rownames(beta_nonusers)[row]
+  
+  row_pvalue <- c(rowname, t.test(vec1, vec2)$p.value)
+  effect_size <- c(rowname, (mean(vec1) - mean(vec2)) /
+                     sqrt((var(vec1) + var(vec2)) / 2))
+  #print(row_pvalue)
+  #print(effect_size)
+  effect_sizes <- rbind(effect_sizes, effect_size)
+  pvalues <- rbind(pvalues, row_pvalue)
+}
+
+pvalues %>% setNames(., c("Position", "P-value"))
+effect_sizes %>% setNames(., c("Position", "Effect size"))
 ```
