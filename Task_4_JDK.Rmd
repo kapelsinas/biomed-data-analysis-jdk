@@ -68,7 +68,5 @@ t_test <- as.data.frame(apply(beta_nonusers, 2, function(beta_nonusers)
 # ir suprantamai, paaiškinant pagrindinę esmę.
 
 ```{r Efect_size_calculation}
-t_test <- as.data.frame(apply(beta_nonusers, 2, function(beta_nonusers) 
-             t.test(beta_nonusers, beta_users)$p.value)) %>%
-                   setNames(., c("pvalue"))
+
 ```
