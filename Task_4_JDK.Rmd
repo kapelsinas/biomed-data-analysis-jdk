@@ -20,12 +20,14 @@ p_load(dplyr)
 
 ```{r Data_access, warning=FALSE, include=FALSE}
 beta <- readRDS("dat8.Rds")               # Modification value matrix
-colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 
 pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
 annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
+
+colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 ```
+
 ### APRAŠYMO VIETA ###
 # Aprašyti, kiek moterų įeina į aspiriną vartojančių ir aspirino nevartojančių
 # moterų grupes (atlikus ankstesnes užduotis dalis mėginių buvo pašalinta, tad
@@ -34,6 +36,7 @@ samples <- read.csv("samples2.csv")
 # Pateikti lentelę, kiek moterų įeina į asprino nevartojančių ir aspiriną
 # vartojančių moterų grupes (prieš ir po (čia turima omenyje, kiek moterų įėjo
 # į tas pačias grupes prieš mėginių šalinimą ir atlikus mėginių šalinimą))
+
 ```{r Aspirin_user/nonuser_selection}
 # Extracting data frame rows that describe aspirin non-users:
 aspirin_nonusers <- samples[samples$aspirin == 'nonuser', ]$graph_name
@@ -48,4 +51,24 @@ beta_nonusers <- beta[, colnames(beta) %in% aspirin_nonusers]
 # Extracting matrix columns that store aspirin non-user modification values
 # (from beta matrix):
 beta_users <- beta[, colnames(beta) %in% aspirin_users]
+```
+
+# T.test pradžia. Reikalingas trumpas paaiškinimas, kodėl jį atliekam ir ką
+# jis duoda (aiškinti kaip medikui, o ne kaip dėstytojui).
+
+```{r T_test_performance}
+t_test <- as.data.frame(apply(beta_nonusers, 2, function(beta_nonusers) 
+             t.test(beta_nonusers, beta_users)$p.value)) %>%
+                   setNames(., c("pvalue"))
+```
+
+# Efekto dydžio skaičiavimo pradžia. Truputį aprašyti, kas tas efekto dydis,
+# kodėl jį atliekam ir nurodyti, kad yra toks Cohen's d testas, leidžiantis
+# apskaičiuoti efekto dydį. Jokių būdu neaprašinėti techniškai, bet aiškiai
+# ir suprantamai, paaiškinant pagrindinę esmę.
+
+```{r Efect_size_calculation}
+t_test <- as.data.frame(apply(beta_nonusers, 2, function(beta_nonusers) 
+             t.test(beta_nonusers, beta_users)$p.value)) %>%
+                   setNames(., c("pvalue"))
 ```
