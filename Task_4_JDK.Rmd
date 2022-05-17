@@ -15,18 +15,19 @@ knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
 
 ```{r Preparations, warning=FALSE, include=FALSE}
 library(pacman)
-p_load(dplyr, matrixStats, rstatix)
+p_load(dplyr, ggplot2)
 ```
 
 ```{r Data_access, warning=FALSE, include=FALSE}
 beta <- readRDS("dat8.Rds")               # Modification value matrix
-
 pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
 annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
 
 colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 ```
+
+# 1. Statistinis hipotezių testavimas vidurkių palyginimui
 
 ### APRAŠYMO VIETA ###
 # Aprašyti, kiek moterų įeina į aspiriną vartojančių ir aspirino nevartojančių
@@ -61,7 +62,7 @@ beta_users <- beta[, colnames(beta) %in% aspirin_users]
 # apskaičiuoti efekto dydį. Jokių būdu neaprašinėti techniškai, bet aiškiai
 # ir suprantamai, paaiškinant pagrindinę esmę.
 
-```{r T_test_performance}
+```{r T_test_effect_size_calculations}
 # Creating an empty dataframes that will store p values and effect sizes
 # for each position:
 pvalues <- data.frame()
@@ -69,7 +70,7 @@ effect_sizes <- data.frame()
 
 # Running a loop that performs t-test, effect size calculations and appends
 # p-values, effect size values into dataframes:
-for (row in 1:nrows(beta)) {
+for (row in 1:10000) {
   vec1 <- c(beta_nonusers[row, ])
   vec2 <- c(beta_users[row, ])
   rowname <- rownames(beta_nonusers)[row]
@@ -83,6 +84,28 @@ for (row in 1:nrows(beta)) {
   pvalues <- rbind(pvalues, row_pvalue)
 }
 
-pvalues %>% setNames(., c("Position", "P-value"))
-effect_sizes %>% setNames(., c("Position", "Effect size"))
+pvalues <- pvalues %>% setNames(., c("Position", "P_value"))
+effect_sizes <- effect_sizes %>% setNames(., c("Position", "Effect_size"))
+```
+
+# Paaiškinti, ką atvaizduoja ši histograma, interpretuoti ją ir panašiai.
+
+```{r Plot_preparations}
+values <- as.numeric(pvalues$P_value)
+p_df <- data.frame(positions = c(pvalues$Position), pvals = values)
+
+p1 <- ggplot(p_df, aes(x = pvals)) + 
+        geom_histogram(binwidth = 0.025, color = "#00004d", fill = "#2f4581") +
+        labs(x = "P value", y = "Count",
+             title = "P-value distribution histogram") +
+        theme(axis.text.x = element_text(vjust = 0.5),
+              plot.title = element_text(hjust = 0.5, face = "bold"),
+              panel.background = element_rect(colour = "#05076a", size = 0.5,
+                                              fill = "#eaeafd",
+                                              linetype = "solid"),
+              panel.grid.major = element_line(size = 0.1, linetype = 'dashed',
+                                              colour = "#05076a"), 
+              panel.grid.minor = element_line(size = 0.1, linetype = 'dashed',
+                                              colour = "#05076a"))
+p1
 ```
