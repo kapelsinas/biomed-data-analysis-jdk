@@ -19,12 +19,13 @@ p_load(dplyr)
 ```
 
 ```{r Data_access, warning=FALSE, include=FALSE}
-beta <- readRDS("dat8.Rds")               # Modification value matrix
-colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
-
-pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
-annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
+beta <- readRDS("/home/enjoy/Desktop/dat8.Rds")               # Modification value matrix
+pData_col <- readRDS("/home/enjoy/Desktop/pData.Rds")         # Sample (column) matrix
+annot_row <- readRDS("/home/enjoy/Desktop/annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
+
+colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
+beta_values <- readRDS("beta_values.rds")
 ```
 ### APRAŠYMO VIETA ###
 # Aprašyti, kiek moterų įeina į aspiriną vartojančių ir aspirino nevartojančių
@@ -50,4 +51,19 @@ beta_nonusers <- beta[, colnames(beta) %in% aspirin_nonusers]
 # (from beta matrix):
 beta_users <- beta[, colnames(beta) %in% aspirin_users]
 #beta_users
+
+
+age_nonuser <- samples[samples$aspirin == "nonuser", which( colnames(samples)=="age" )] 
+
+age_user <- samples[samples$aspirin == "longterm", which( colnames(samples)=="age" )]
+
+t.test(age_nonuser)
+t.test(age_user)
+
+
+help(t.test)
+
+
+
+
 ```
