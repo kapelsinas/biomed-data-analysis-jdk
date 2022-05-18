@@ -329,12 +329,10 @@ write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
 
 ```{r 4.1, warning=FALSE, include=FALSE }
 
-mod0 <- lm(age ~ aspirin, data = samples)
-mod1 <- lm(age ~ aspirin + clonic_location, data = samples)
-
+mod0 <- lm(age ~ aspirin + clonic_location, data = samples)
+mod1 <- lm(age ~ aspirin + clonic_location + polyp, data = samples)
 
 res <- anova(mod0, mod1)
-
 
 ```
 
