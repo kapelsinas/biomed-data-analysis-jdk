@@ -15,7 +15,7 @@ knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
 
 ```{r Preparations, warning=FALSE, include=FALSE}
 library(pacman)
-p_load(dplyr, ggplot2, reshape2, reshape, data.table, stringi)
+p_load(dplyr, ggplot2, reshape2, reshape, data.table, stringi, stringr)
 ```
 
 ```{r Data_access, warning=FALSE, include=FALSE}
@@ -29,16 +29,38 @@ colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 
 # 1. Statistinis hipotezių testavimas vidurkių palyginimui
 
-### APRAŠYMO VIETA ###
-# Aprašyti, kiek moterų įeina į aspiriną vartojančių ir aspirino nevartojančių
-# moterų grupes (atlikus ankstesnes užduotis dalis mėginių buvo pašalinta, tad
-# dabar aspiriną vartojančių ir nevartojančių moterų skaičius yra pakitęs)!!!
+Neretai atliekant biomedicininių duomenų analizę, duomenys yra analizuojami
+juos suskirstant į tam tikras grupes ir tiriant, kaip skiriasi atliekamų
+statistinių testų rezultatai tarp skirtingų grupių. Grupės gali būti sudaromos
+pagal požymius, kurie yra žinomi iš tyrime analizuojamų mėginių aprašymo
+lentelių.
+Pavyzdžiui, turint sudarytas mėginių aprašymo lenteles galima sudaryti grupes:
+- Viršsvorio turinčių ir viršsvorio neturinčių tiriamųjų grupės;
+- Rūkančių ir nerūkančių tiriamųjų grupės;
+- Vyrų ir moterų grupės;
+- Sveikų ir sergančių tiriamųjų grupės.
+- Ir pan.
 
-# Pateikti lentelę, kiek moterų įeina į asprino nevartojančių ir aspiriną
-# vartojančių moterų grupes (prieš ir po (čia turima omenyje, kiek moterų įėjo
-# į tas pačias grupes prieš mėginių šalinimą ir atlikus mėginių šalinimą))
+Iš šioje užduotyje nagrinėjamo straipsnio, kuriame buvo tiriamos moterų žarnų
+biopsijos, buvo gauta mėginius aprašanti lentelė, kurią peržiūrėjus buvo
+galima sudaryti grupes pagal kelis požymius:
+- Žarnų polipų turinčių ir polipų neturinčių moterų grupės;
+- Moterų, kurioms yra nuo 50 iki 65 metų, grupė ir moterų, kurioms yra nuo 65
+iki 80 metų, grupė;
+- Aspiriną ilgą laiką vartojančių ir nevartojančių moterų grupės.
 
-```{r Aspirin_user/nonuser_selection, warning=FALSE, include=FALSE}
+Pirmoje užduoties dalyje pasirinkta suskirstyti mėginius į grupes pagal aspirino
+vartojimą ir nevartojimą. Antroje praktinėje užduotyje dalis mėginių buvo
+pašalinti, nes jie neteikė vertingos informacijos, todėl šioje praktinėje
+užduotyje analizuojamų mėginių kiekis yra mažesnis (96 mėginiai iš 124 mėginių).
+
+Žemiau esančioje horizontalioje stulpelinėje diagramoje vaizduojama, kiek
+mėginių sudarė kievieną grupę (aspirino nevartojančių grupė ir aspiriną
+vartojančių grupė) prieš atliekant antrąją praktinę užduotį, kai buvo turimi
+124 mėginiai, bei stulpeliai, kuriuose vaizduojami mėginių kiekiai grupėse
+po mėginių pašalinimo (likus 96 mėginiams):
+
+```{r Aspirin_user/nonuser_selection, fig.width = 4, fig.height = 3, fig.align = "center", warning=FALSE, include=FALSE}
 # Extracting data frame rows that describe aspirin non-users:
 aspirin_nonusers <- samples[samples$aspirin == 'nonuser', ]$graph_name
 
@@ -52,7 +74,45 @@ beta_nonusers <- beta[, colnames(beta) %in% aspirin_nonusers]
 # Extracting matrix columns that store aspirin non-user modification values
 # (from beta matrix):
 beta_users <- beta[, colnames(beta) %in% aspirin_users]
+
+group_counts <- data_frame(aspirin = c("Aspirin nonusers (from 124 samples)",
+     "Aspirin users (from 124 samples)", "Aspirin nonusers (from 96 samples)",
+     "Aspirin users (from 96 samples)"), 
+                           count = c(length(aspirin_nonusers),
+     length(aspirin_users), length(colnames(beta_nonusers)),
+     length(colnames(beta_users))))
+
+p0 <- ggplot(group_counts, aes(x = aspirin, y = count)) +
+        geom_bar(stat = "identity", color = "#31000d", fill = "#66001a") +
+        geom_text(aes(label = count), hjust = -0.5, size = 4, fontface = "bold") +
+        labs(x = "Groups", y = "Count",
+             title = "Aspirin nonusers and users") +
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) + 
+        coord_flip() +
+        ylim(c(0, 80)) +
+        theme(axis.text.y = element_text(hjust = 0.5, colour = "black"),
+              axis.text.x = element_text(colour = "black"),
+              plot.title = element_text(hjust = 0.5, face = "bold"),
+              panel.background = element_rect(colour = "#31000d", size = 0.5,
+                                              fill = "#ffeff4",
+                                              linetype = "solid"),
+              panel.grid.major = element_line(size = 0.1, linetype = 'dashed',
+                                              colour = "#66001a"), 
+              panel.grid.minor = element_line(size = 0.1, linetype = 'dashed',
+                                              colour = "#66001a"))
+print(p0)
 ```
+Suskirsčius mėginius į grupes buvo tikrinama, kaip skiriasi visų DNR pozicijų
+modifikacijos reikšmių vidurkiai tarp sudarytų aspirino nevartojančių ir
+aspiriną vartojančių moterų grupių. Šis palyginimas atliktas, pasinaudojus
+svarbiu statistikoje taikomu ***t-testu***, kuris šiuo atveju bando nustatyti,
+ar modifikacijos reikšmių vidurkiai skirtingose DNR pozicijose sutampa.
+
+Atlikus abiejų grupių modifikacijos reikšmių vidurkių pozicijose palyginimą,
+yra grąžinamos specialios reikšmės (p vertės), kurios leidžia padaryti išvadą,
+ar susietų grupių modifikacijos reikšmių vidurkiai skiriasi reikšmingai.
+Kitaip tariant, šio testo rezultatas padeda įvertinti, ar aspirino vartojimas
+ir nevartojimas įtakoja DNR modifikacijų reikšmes.
 
 # T.test. Reikalingas trumpas paaiškinimas, kodėl jį atliekam ir ką
 # jis duoda (aiškinti kaip medikui, o ne kaip dėstytojui).
@@ -89,23 +149,51 @@ effect_sizes <- effect_sizes %>% setNames(., c("Position", "Effect_size"))
 ```
 
 # Paaiškinti, ką atvaizduoja ši histograma, interpretuoti ją ir panašiai.
+Žemiau pateikiamoje histogramoje yra vaizduojamas gautų *p* verčių
+pasiskirstymas. Jeigu *p* reikšmės yra mažesnės už *0.05*, tada yra atmetama
+hipotezė, jog grupių vidurkiai yra lygūs - yra daroma išvada, kad 
+modifikacijos reikšmių vidurkiai tarp skirtingų grupių yra reikšmingi.
 
-```{r P_value_histogram, echo=FALSE, warning=FALSE}
+Svarbu paminėti, kad šiuo atveju modifikacijos reikšmių skaičius grupėse yra
+skirtingas, todėl modifikacijos reikšmių vidurkiai nesutaps. Dėl šios
+priežasties **Papildomos užduotys** dalyje yra sulyginamas mėginių skaičius
+grupėse ir pakartojamas *t testas*, modifikacijos reikšmių vidurkiams grupėse
+palyginti.
+
+Vaizduojama histograma rodo, kad buvo gautas didelis skaičius *p* verčių,
+kurios buvo mažesnės už 0.05. Reikšmių, kurios būtų didesnės už 0.05, buvo
+nustatyta mažiau. Taip pat didėjančių *p* verčių skaičius mažėjo, stebint
+didesnius *p* verčių kiekius ties 0.125, 0.225, 0.35, 0.55, 0.9 ir 0.975
+*p* vertėmis:
+
+```{r P_value_histogram, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
 values <- as.numeric(pvalues$P_value)
 p_df <- data.frame(positions = c(pvalues$Position), pvals = values)
 
 p1 <- ggplot(p_df, aes(x = pvals)) + 
         geom_histogram(binwidth = 0.025, color = "#00004d", fill = "#2f4581") +
+        geom_vline(xintercept = 0.05, color = "red", size = 0.7,
+                   linetype = "longdash") +
+        geom_vline(xintercept = c(0.125, 0.225, 0.35, 0.55, 0.9, 0.975),
+                   color = "#e6b300", size = 0.5, linetype = "longdash") +
         labs(x = "P value", y = "Count",
              title = "P-value distribution histogram") +
-        theme(axis.text.x = element_text(vjust = 0.5),
+        scale_x_continuous(breaks = seq(0, 1, by = 0.05)) +
+        annotate("text", x = 0.2, y = 400, label = stringr::str_wrap("Line
+                 indicating 0.05 p value break", width = 20), size = 3,
+                 color = "red", fontface = 4) +
+        annotate("text", x = 0.725, y = 400, label = stringr::str_wrap("Lines
+                 indicating slightly higher certain p value counts",
+                 width = 25), size = 3, color = "#e6b300", fontface = 4) +
+        theme(axis.text.x = element_text(angle = 45, vjust = 0.5,
+                                         colour = "black"),
               plot.title = element_text(hjust = 0.5, face = "bold"),
               panel.background = element_rect(colour = "#05076a", size = 0.5,
                                               fill = "#eaeafd",
                                               linetype = "solid"),
-              panel.grid.major = element_line(size = 0.1, linetype = 'dashed',
+              panel.grid.major = element_line(size = 0.05, linetype = 'dashed',
                                               colour = "#05076a"), 
-              panel.grid.minor = element_line(size = 0.1, linetype = 'dashed',
+              panel.grid.minor = element_line(size = 0.05, linetype = 'dashed',
                                               colour = "#05076a"))
 print(p1)
 ```
@@ -113,7 +201,7 @@ print(p1)
 # Pakomentuoti, koks veiksmas buvo padarytas toliau, kodėl jis buvo daromas bei
 # koks rezultatas buvo gautas.
 
-```{r Min_p_value_visualization, echo=FALSE, warning=FALSE}
+```{r Min_p_value_visualization, fig.align="center", fig.height=4, fig.width=5, echo=FALSE, warning=FALSE}
 # Ordering a p-value dataframe and extracting 5 rows with the lowest p-value:
 #min_Ps <- p_df[order(p_df$pvals),][1:5,]
 
@@ -126,11 +214,11 @@ user_len <- length(colnames(beta_users))
 # Creating dataframes with modification values of 5 positions (cg01760763,
 # cg20768358, cg07179016, cg14510359, cg04083753):
 anon_users <- beta_nonusers[position_names, ] %>%
-                `colnames<-`(c(rep("Aspirin_nonusers", nonuser_len))) %>%
+                `colnames<-`(c(rep("Aspirin nonusers", nonuser_len))) %>%
                 melt()
 
 a_users <- beta_users[position_names, ] %>%
-              `colnames<-`(c(rep("Aspirin_users", user_len))) %>%
+              `colnames<-`(c(rep("Aspirin users", user_len))) %>%
               melt()
 
 # Combining two dataframes (of aspirin non-users and aspirin users) into one:
@@ -141,11 +229,13 @@ group_modifications <- rbind(anon_users, a_users) %>%
 p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
                                       color = Position)) +
         geom_point() +
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) + 
         labs(title = "DNA modification values",
              subtitle = "5 positions with the lowest p values",
              x = "Aspirin user/non-user", y = "Modification value") +
         facet_grid(. ~ Position) +
-        theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8),
+        theme(axis.text.x = element_text(vjust = 0.5, size = 8,
+                                         colour = "black"),
               plot.title = element_text(hjust = 0.5, face = "bold"),
               plot.subtitle = element_text(hjust = 0.5, face = "bold"),
               panel.background = element_rect(colour = "#05076a", size = 0.5,
@@ -237,4 +327,3 @@ bgene_list <- data.table(Genes = unique(unlist(blist)))
 write.table(bgene_list, file = "background_gene_list.txt", quote = FALSE,
             col.names = FALSE, row.names = FALSE)
 ```
-
