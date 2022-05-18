@@ -123,14 +123,15 @@ ir nevartojimas įtakoja DNR modifikacijų reikšmes.
 # ir suprantamai, paaiškinant pagrindinę esmę.
 
 ```{r T_test_effect_size_calculations, warning=FALSE, include=FALSE}
-# Creating an empty dataframes that will store p values and effect sizes
+# Creating an empty matrixes that will store p values and effect sizes
 # for each position:
-pvalues <- data.frame()
-effect_sizes <- data.frame()
+pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
+effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
 
 # Running a loop that performs t-test, effect size calculations and appends
-# p-values, effect size values into dataframes:
-for (row in 1:10000) {
+# p-values, effect size values into matrixes:
+sprintf("Start time: %s", format(Sys.time(), "%D %H:%M:%S"))
+for (row in 1:nrow(beta)) {
   vec1 <- c(beta_nonusers[row, ])
   vec2 <- c(beta_users[row, ])
   rowname <- rownames(beta_nonusers)[row]
@@ -138,17 +139,23 @@ for (row in 1:10000) {
   row_pvalue <- c(rowname, t.test(vec1, vec2)$p.value)
   effect_size <- c(rowname, (mean(vec1) - mean(vec2)) /
                      sqrt((var(vec1) + var(vec2)) / 2))
-  #print(row_pvalue)
-  #print(effect_size)
-  effect_sizes <- rbind(effect_sizes, effect_size)
-  pvalues <- rbind(pvalues, row_pvalue)
+  # if (row %% 10000 == 0) {
+  #   print(row)
+  # }
+  # 
+  effect_sizes[row,] <- effect_size
+  pvalues[row,] <- row_pvalue
 }
+sprintf("End time: %s", format(Sys.time(), "%D %H:%M:%S"))
 
-pvalues <- readRDS("data/p_values.rds")
-effect_sizes <- readRDS("data/effect_sizes.rds")
+colnames(pvalues) <- c("Position", "P-value")
+colnames(effect_sizes) <- c("Position", "Effect size")
 
-pvalues <- pvalues %>% setNames(., c("Position", "P_value"))
-effect_sizes <- effect_sizes %>% setNames(., c("Position", "Effect_size"))
+effect_sizes <- as.data.frame(effect_sizes)
+pvalues <- as.data.frame(pvalues)
+
+# saveRDS(effect_sizes, file='effect_sizes.rds')
+# saveRDS(pvalues, file="p_values.rds")
 ```
 
 # Paaiškinti, ką atvaizduoja ši histograma, interpretuoti ją ir panašiai.
