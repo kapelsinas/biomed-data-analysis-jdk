@@ -20,9 +20,9 @@ p_load(dplyr, ggplot2, reshape2, reshape, data.table, stringi, stringr,
 ```
 
 ```{r Data_access, warning=FALSE, include=FALSE}
-beta <- readRDS("dat8.Rds")               # Modification value matrix
-pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
-annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
+beta <- readRDS("data/dat8.Rds")               # Modification value matrix
+pData_col <- readRDS("data/pData.Rds")         # Sample (column) matrix
+annot_row <- readRDS("data/annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
 
 colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
@@ -147,6 +147,9 @@ for (row in 1:10000) {
   pvalues <- rbind(pvalues, row_pvalue)
 }
 
+pvalues <- readRDS("data/p_values.rds")
+effect_sizes <- readRDS("data/effect_sizes.rds")
+
 pvalues <- pvalues %>% setNames(., c("Position", "P_value"))
 effect_sizes <- effect_sizes %>% setNames(., c("Position", "Effect_size"))
 ```
@@ -263,7 +266,7 @@ print(p2 + scale_color_brewer(palette = "Set1"))
 ```
 ???????
 ```{r Chromosome_manhattan_plot, echo=FALSE, warning=FALSE}
-Pvalues <- readRDS("p_values.rds")
+Pvalues <- readRDS("data/p_values.rds")
 Pval <- Pvalues %>% setNames(., c("Position", "P_value"))
 
 #positions_chr <- annot_row[annot_row$chr == "chr1", ]$Name
@@ -361,6 +364,20 @@ fgene_list <- data.table(Genes = unique(unlist(flist)))
 write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
             col.names = FALSE, row.names = FALSE)
 ```
+
+# 4. Visus aukščiau aprašytus žingsnius pakartokite ieškodami pozicijų susijusių su amžiumi.
+
+```{r 4.1, warning=FALSE, include=FALSE }
+# Using linear models to create two models to control "outsider" effects.
+mod0 <- lm(age ~ aspirin + clonic_location, data = samples)
+mod1 <- lm(age ~ aspirin + clonic_location + polyp, data = samples)
+
+res <- anova(mod0, mod1)
+```
+
+# Pilnas genų sąrašas
+# Įskaitomi visi genai, nepaisant to, kiek patikimos yra juos atitinkančios
+# pozicijos.
 
 ```{r GO_analysis_all_genes, warning=FALSE, include=FALSE}
 # Extracting 'UCSC_RefGene_Name' column values for the entire positions:
