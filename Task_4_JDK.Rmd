@@ -328,7 +328,7 @@ write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
 # 4. Visus aukščiau aprašytus žingsnius pakartokite ieškodami pozicijų susijusių su amžiumi.
 
 ```{r 4.1, warning=FALSE, include=FALSE }
-
+# Using linear models to create two models to control "outsider" effects.
 mod0 <- lm(age ~ aspirin + clonic_location, data = samples)
 mod1 <- lm(age ~ aspirin + clonic_location + polyp, data = samples)
 
