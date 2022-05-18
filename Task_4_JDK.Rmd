@@ -284,14 +284,15 @@ positions <- data.table(correction = c("Be korekcijos","FDR","Bonferroni"),
                       length(rownames(p_corr[p_corr$Bonferroni <= 0.05, ]))))
 
 
-positions                                                                           %>%
-      as_huxtable()                                             %>%
-      set_bold(1, everywhere, TRUE)                                                   %>%
-      set_all_borders(1)                                                              %>%
+positions                                                                                           %>%
+      as_huxtable()                                                                                 %>%
+      set_bold(1, everywhere, TRUE)                                                                 %>%
+      set_all_borders(1)                                                                            %>%
       map_text_color(everywhere, "position_count",      by_colorspace("navy", "red", "darkgreen"))  %>%
-      map_italic(everywhere, "correction",        by_regex("Merc.*" = TRUE))        %>%
-      set_bold(1, everywhere, TRUE) %>%
-      set_background_color(1:1, everywhere , "lightgreen")
+      map_italic(everywhere, "correction",        by_regex("Merc.*" = TRUE))                        %>%
+      set_bold(1, everywhere, TRUE)                                                                 %>%
+      set_background_color(1:1, everywhere , "lightgreen")                                          %>%
+      set_align(1,1, "center")
 
   
 ```
