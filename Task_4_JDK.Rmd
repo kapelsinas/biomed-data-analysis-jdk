@@ -145,7 +145,12 @@ for (row in 1:nrow(beta)) {
 
   effect_sizes[row, ] <- effect_size
   pvalues[row, ] <- row_pvalue
+
 }
+sprintf("End time: %s", format(Sys.time(), "%D %H:%M:%S"))
+
+colnames(pvalues) <- c("Position", "P-value")
+colnames(effect_sizes) <- c("Position", "Effect size")
 
 #sprintf("End time: %s", format(Sys.time(), "%D %H:%M:%S"))
 
