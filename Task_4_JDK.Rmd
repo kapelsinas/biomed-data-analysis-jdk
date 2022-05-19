@@ -9,23 +9,25 @@ output:
 subtitle: Hipotezių testavimas
 ---
 
-```{r Figure_size, warning=FALSE, include=FALSE}
+```{r Figure_size, message=FALSE, warning=FALSE, include=FALSE}
 knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
 ```
 
-```{r Preparations, warning=FALSE, include=FALSE}
+```{r Preparations, message=FALSE, warning=FALSE, include=FALSE}
 library(pacman)
 p_load(dplyr, ggplot2, reshape2, reshape, data.table, stringi, stringr,
-       huxtable)
+       huxtable, VennDetail)
 ```
 
-```{r Data_access, warning=FALSE, include=FALSE}
+```{r Data_access, message=FALSE, warning=FALSE, include=FALSE}
 beta <- readRDS("dat8.Rds")               # Modification value matrix
 pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
 annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
-samples <- read.csv("samples2.csv")
+samples <- read.csv("samples2.csv") # POS = BP, SNP - nėra! Išsirinkti tą CHR, kuri atrodo įdomiausiai, lengviau interpretuoti.
 
 colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
+
+annot_row[annot_row$chr == "chr1",]
 ```
 
 # Pagrindinės užduotys
@@ -40,7 +42,7 @@ Pavyzdžiui, turint sudarytas mėginių aprašymo lenteles galima sudaryti grupe
 - Viršsvorio turinčių ir viršsvorio neturinčių tiriamųjų grupės;
 - Rūkančių ir nerūkančių tiriamųjų grupės;
 - Vyrų ir moterų grupės;
-- Sveikų ir sergančių tiriamųjų grupės.
+- Sveikų ir sergančių tiriamųjų grupės;
 - Ir pan.
 
 Iš šioje užduotyje nagrinėjamo straipsnio, kuriame buvo tiriamos moterų žarnų
@@ -62,7 +64,7 @@ vartojančių grupė) prieš atliekant antrąją praktinę užduotį, kai buvo t
 124 mėginiai, bei stulpeliai, kuriuose vaizduojami mėginių kiekiai grupėse
 po mėginių pašalinimo (likus 96 mėginiams):
 
-```{r Aspirin_user/nonuser_selection, fig.width = 4, fig.height = 3, fig.align = "center", warning=FALSE, include=FALSE}
+```{r Aspirin_user/nonuser_selection, fig.align="center", fig.height=3, fig.width=4, message=FALSE, warning=FALSE, include=FALSE}
 # Extracting data frame rows that describe aspirin non-users:
 aspirin_nonusers <- samples[samples$aspirin == 'nonuser', ]$graph_name
 
@@ -114,7 +116,7 @@ ar modifikacijos reikšmių vidurkiai skirtingose DNR pozicijose sutampa.
 Atlikus abiejų grupių modifikacijos reikšmių vidurkių pozicijose palyginimą,
 yra grąžinamos specialios reikšmės (p vertės), kurios leidžia padaryti išvadą,
 ar susietų grupių modifikacijos reikšmių vidurkiai skiriasi reikšmingai.
-Kitaip tariant, šio testo rezultatas padeda įvertinti, ar aspirino vartojimas
+***Kitaip tariant***, šio testo rezultatas padeda įvertinti, ar aspirino vartojimas
 ir nevartojimas įtakoja DNR modifikacijų reikšmes.
 
 # T.test. Reikalingas trumpas paaiškinimas, kodėl jį atliekam ir ką
@@ -125,31 +127,47 @@ ir nevartojimas įtakoja DNR modifikacijų reikšmes.
 # apskaičiuoti efekto dydį. Jokių būdu neaprašinėti techniškai, bet aiškiai
 # ir suprantamai, paaiškinant pagrindinę esmę.
 
-```{r T_test_effect_size_calculations, warning=FALSE, include=FALSE}
-# Creating an empty dataframes that will store p values and effect sizes
+```{r T_test_effect_size_calculations, message=FALSE, warning=FALSE, include=FALSE}
+# Creating an empty matrixes that will store p values and effect sizes
 # for each position:
-pvalues <- data.frame()
-effect_sizes <- data.frame()
+pvalues <- matrix(NA, nrow = nrow(beta), ncol = 2)
+effect_sizes <- matrix(NA, nrow = nrow(beta), ncol = 2)
 
 # Running a loop that performs t-test, effect size calculations and appends
-# p-values, effect size values into dataframes:
-for (row in 1:10000) {
+# p-values, effect size values into matrixes:
+#sprintf("Start time: %s", format(Sys.time(), "%D %H:%M:%S"))
+
+for (row in 1:nrow(beta)) {
   vec1 <- c(beta_nonusers[row, ])
   vec2 <- c(beta_users[row, ])
   rowname <- rownames(beta_nonusers)[row]
   
   row_pvalue <- c(rowname, t.test(vec1, vec2)$p.value)
-  effect_size <- c(rowname, (mean(vec1) - mean(vec2)) /
-                     sqrt((var(vec1) + var(vec2)) / 2))
-  #print(row_pvalue)
-  #print(effect_size)
-  effect_sizes <- rbind(effect_sizes, effect_size)
-  pvalues <- rbind(pvalues, row_pvalue)
+  effect_size <- c(rowname, (mean(vec1) - mean(vec2)))
+
+  effect_sizes[row, ] <- effect_size
+  pvalues[row, ] <- row_pvalue
 }
 
-pvalues <- pvalues %>% setNames(., c("Position", "P_value"))
-effect_sizes <- effect_sizes %>% setNames(., c("Position", "Effect_size"))
+#sprintf("End time: %s", format(Sys.time(), "%D %H:%M:%S"))
+
+colnames(pvalues) <- c("Position", "Pvalue")
+colnames(effect_sizes) <- c("Position", "Effect_size")
+
+effect_sizes <- as.data.frame(effect_sizes)
+pvalues <- as.data.frame(pvalues)
+
+# saveRDS(effect_sizes, file='effect_sizes.rds')
+# saveRDS(pvalues, file="p_values.rds")
+
+# pvalues <- readRDS("p_values.rds")
+# effect_sizes <- readRDS("effect_sizes.rds")
+
+#pvalues
+#effect_sizes
 ```
+
+### P verčių histograma
 
 Žemiau pateikiamoje histogramoje yra vaizduojamas gautų *p* verčių
 pasiskirstymas. Jeigu *p* reikšmės yra mažesnės už *0.05*, tada yra atmetama
@@ -164,29 +182,22 @@ palyginti.
 
 Vaizduojama histograma rodo, kad buvo gautas didelis skaičius *p* verčių,
 kurios buvo mažesnės už 0.05. Reikšmių, kurios būtų didesnės už 0.05, buvo
-nustatyta mažiau. Taip pat didėjančių *p* verčių skaičius mažėjo, stebint
-didesnius *p* verčių kiekius ties 0.125, 0.225, 0.35, 0.55, 0.9 ir 0.975
-*p* vertėmis:
+nustatyta mažiau. Taip pat didėjančių *p* verčių skaičius gradualiai mažėjo:
 
-```{r P_value_histogram, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
-values <- as.numeric(pvalues$P_value)
+```{r P_value_histogram, echo=FALSE, fig.align="center", fig.height=3, fig.width=5, message=FALSE, warning=FALSE}
+values <- as.numeric(pvalues$Pvalue)
 p_df <- data.frame(positions = c(pvalues$Position), pvals = values)
 
 p1 <- ggplot(p_df, aes(x = pvals)) + 
         geom_histogram(binwidth = 0.025, color = "#00004d", fill = "#2f4581") +
         geom_vline(xintercept = 0.05, color = "red", size = 0.7,
                    linetype = "longdash") +
-        geom_vline(xintercept = c(0.125, 0.225, 0.35, 0.55, 0.9, 0.975),
-                   color = "#e6b300", size = 0.5, linetype = "longdash") +
         labs(x = "P value", y = "Count",
              title = "P-value distribution histogram") +
         scale_x_continuous(breaks = seq(0, 1, by = 0.05)) +
-        annotate("text", x = 0.2, y = 400, label = stringr::str_wrap("Line
+        annotate("text", x = 0.2, y = 40000, label = stringr::str_wrap("Line
                  indicating 0.05 p value break", width = 20), size = 3,
                  color = "red", fontface = 4) +
-        annotate("text", x = 0.725, y = 400, label = stringr::str_wrap("Lines
-                 indicating slightly higher certain p value counts",
-                 width = 25), size = 3, color = "#e6b300", fontface = 4) +
         theme(axis.text.x = element_text(angle = 45, vjust = 0.5,
                                          colour = "black"),
               plot.title = element_text(hjust = 0.5, face = "bold"),
@@ -199,7 +210,9 @@ p1 <- ggplot(p_df, aes(x = pvals)) +
                                               colour = "#05076a"))
 print(p1)
 ```
+### Patikimiausių pozicijų DNR modifikacijos profilis
 
+### Reikia keisti
 Žemiau esančiuose grafikuose yra vaizduojami modifikacijos įverčiai 5 pozicijų,
 turinčių žemiausias *p* vertes. Kiekviename atskirame grafike yra vaizduojamos
 aspirino nevartojančių ir aspiriną vartojančių moterų modifikacijos vertės
@@ -211,7 +224,7 @@ antrajame grafikuose (cg01760763, cg20768358) modifikacijos įverčiai yra
 didžiausi. Taip pat iš grafikų galima pastebėti, kad paskutinės pozicijos
 (cg04083753) modifikacijos įverčiai yra patys mažiausi.
 
-```{r Min_p_value_visualization, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
+```{r Min_p_value_visualization, echo=FALSE, fig.align="center", fig.height=3, fig.width=5, message=FALSE, warning=FALSE}
 # Ordering a p-value dataframe and extracting 5 rows with the lowest p-value:
 #min_Ps <- p_df[order(p_df$pvals),][1:5,]
 
@@ -261,19 +274,41 @@ p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
 
 print(p2 + scale_color_brewer(palette = "Set1"))
 ```
-???????
-```{r Chromosome_manhattan_plot, echo=FALSE, warning=FALSE}
-Pvalues <- readRDS("p_values.rds")
-Pval <- Pvalues %>% setNames(., c("Position", "P_value"))
 
-#positions_chr <- annot_row[annot_row$chr == "chr1", ]$Name
-#chr1 <- Pval[Pval$Position %in% positions_chr,]
-#chr1
+### Manhattan grafikas septintos chromosomos p vertėms 
+
+```{r Chromosome_manhattan_plot, echo=FALSE, message=FALSE, warning=FALSE}
+pvalues
+
+positions_chr <- annot_row[annot_row$chr == "chr1", ]$Name
+chr1 <- pvalues[pvalues$Position %in% positions_chr,]
+chr1
 
 #ch1 <- data.frame(CHR = c(rep(1, length(annot_row[annot_row$chr == "chr1", ]$Name))),
 #                  P = chr1$P_value)
 #annot_row[annot_row$chr == "chr1", ]
 #colnames(annot_row)
+```
+
+### Volcano grafikas visų chromosomų efektų dydžiams ir p vertėms
+
+```{r Chromosome_manhattan_plot, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+
+
+pvalues <- readRDS("p_values.rds")
+effect_sizes <- readRDS("effect_sizes.rds")
+colnames(pvalues) <- c("Position", "Pvalues")
+colnames(effect_sizes) <- c("Position", "Effect_size")
+
+df <- data.frame(P = as.numeric(pvalues$Pvalues),
+                 Effect_size = as.numeric(effect_sizes$Effect_size))
+
+p1 <- ggplot(df, aes(Effect_size, -log(P,10))) + # -log10 conversion  
+  geom_point(size = 2/5) +
+  xlab(expression("log"[2]*"FC")) + 
+  ylab(expression("-log"[10]*"FDR"))
+p1
 ```
 
 ## 2. Daugkartinio testavimo p verčių korekcija
@@ -337,7 +372,7 @@ statistiškai patikimus modifikacijos įverčių vidurkius, galima analizuoti
 atrinktas DNR pozicijas, pasinaudojus specialiu **GOrilla** įrankiu, kuris
 padeda daryti įvairias išvadas apie konkrečiose pozicijose esančius genus.
 
-```{r GO_analysis_selected_genes_by_p, warning=FALSE, include=FALSE}
+```{r GO_analysis_selected_genes_by_p, message=FALSE, warning=FALSE, include=FALSE}
 # Extracting 'UCSC_RefGene_Name' column values of positions that have a p value
 # which is lower or equal to 0.05 after performing FDR correction:
 selected_pos <- p_corr[p_corr$FDR <= 0.05, 1] %>% 
@@ -351,6 +386,7 @@ modify_lines <- function(x) {
         smatch <- str_match(x, pattern = regex("([a-zA-Z0-9]*);",
                                                ignore_case = T))
         smatch[1, 1] %>% substr(., 1, nchar(.) - 1)
+        strsplit(x, ";") # Pakeisti į šį
       } else { x }
 }
 
@@ -362,7 +398,7 @@ write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
             col.names = FALSE, row.names = FALSE)
 ```
 
-```{r GO_analysis_all_genes, warning=FALSE, include=FALSE}
+```{r GO_analysis_all_genes, message=FALSE, warning=FALSE, include=FALSE}
 # Extracting 'UCSC_RefGene_Name' column values for the entire positions:
 bgenes <- c(unique(annot_row$UCSC_RefGene_Name)) %>%
                stri_remove_empty(., na_empty = FALSE)
@@ -392,16 +428,20 @@ atrinkti genai; dažniausios funkcijos, kurias atlieka baltymus koduojantys
 atrinkti genai; komponentai, kuriuose aptinkami atrinktų genų produktai -
 baltymai.
 
-```{r GO_analysis_results, warning=FALSE, include=FALSE}
-GO_results <- read.csv("gene_info.csv") %>%
-                as.data.table() %>%
-                as_huxtable() %>%
-                set_bold(1, everywhere, TRUE) %>%
-                set_all_borders('NA') %>%
-                set_background_color(1:1, everywhere , "#face2e") %>%
-                set_align(1, 1, "center")
+### Reikia keisti
+```{r GO_analysis_results, echo=FALSE, message=FALSE, warning=FALSE}
 
-align(GO_results) <- "center"
+GO_results <- read.csv("gene_info.csv") #%>%
+                #as.data.table() %>%
+                #as_huxtable() %>%
+                #set_bold(1, everywhere, TRUE) %>%
+                #set_all_borders('NA') %>%
+                #set_background_color(1:1, everywhere , "#face2e") %>%
+                #set_align(1, 1, "center")
+
+#align(GO_results) <- "center"
+
+GO_results <- GO_results[order(GO_results[, "P_value"]), , drop = FALSE] #Ascending order
 print(GO_results)
 ```
 Remiantis lentelėje pateiktais duomenimis bei pilnais ***GOrilla*** analizės
@@ -412,4 +452,40 @@ išsikišimų) sudėtį.
 
 # Papildomos užduotys
 
+## 1. GO analizė statistiškai patikimoms ir nepatikimoms pozicijoms
+
+```{r Extra_insignif_signif_positions, message=FALSE, warning=FALSE, include=FALSE}
+insignif_pos <- Pval[Pval$P_value > 0.05, 1] %>%
+                  annot_row[., ]
+ins_genes <- c(unique(insignif_pos$UCSC_RefGene_Name)) %>%
+                stri_remove_empty(., na_empty = FALSE)
+
+ins_list <- lapply(ins_genes, modify_lines)
+ins_pos_list <- data.table(Genes = unique(unlist(ins_list)))
+
+write.table(ins_pos_list, file = "insignif_pos_gene_list.txt", quote = FALSE,
+            col.names = FALSE, row.names = FALSE)
+```
+
+
+```{r Venn_diagram, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggvenn)
+
+c(ins_pos_list)
+ven <- list(A = c(fgene_list), B = c(ins_pos_list))
+a <- unlist(fgene_list)
+b <-  unlist(ins_pos_list)
+typeof(a)
+
+
+intersect(b, a)
+intersect(a, b)
+
+ven <- list(A = b, B = a)
+ggvenn(
+  ven, 
+  fill_color = c("#0073C2FF", "#EFC000FF"),
+  stroke_size = 0.5, set_name_size = 4
+  )
+```
 
