@@ -183,7 +183,7 @@ didesnius *p* verčių kiekius ties 0.125, 0.225, 0.35, 0.55, 0.9 ir 0.975
 *p* vertėmis:
 
 ```{r P_value_histogram, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
-values <- as.numeric(pvalues$P_value)
+values <- as.numeric(pvalues[,2])
 p_df <- data.frame(positions = c(pvalues$Position), pvals = values)
 
 p1 <- ggplot(p_df, aes(x = pvals)) + 
@@ -408,9 +408,8 @@ colnames(effect_sizes) <- c("Position", "Effect size")
 effect_sizes <- as.data.frame(effect_sizes)
 pvalues <- as.data.frame(pvalues)
 
-# saveRDS(effect_sizes, file='effect_sizes.rds')
-# saveRDS(pvalues, file="p_values.rds")
-
+saveRDS(effect_sizes, file='lm_effect_sizes.rds')
+saveRDS(pvalues, file="lm_p_values.rds")
 
 ```
 
