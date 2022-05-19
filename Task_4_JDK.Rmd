@@ -381,9 +381,8 @@ write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
 ```{r 4.1, warning=FALSE, include=FALSE }
 # Using linear models to create two models to control "outsider" effects.
 
-pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
-effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
-sprintf("Start time: %s", format(Sys.time(), "%D %H:%M:%S"))
+#pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
+#effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
 
 for (row in 1:nrow(beta)) {
   mod0 <- lm(beta[row, ] ~ aspirin + polyp, data= samples.clean)
@@ -491,6 +490,7 @@ p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
               strip.background = element_rect(fill = "#2f4581"),
               strip.text = element_text(color = "white", face = "bold"),
               legend.position = "none")
+
 
 print(p2 + scale_color_brewer(palette = "Set1"))
 ```
