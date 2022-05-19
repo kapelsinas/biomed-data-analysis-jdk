@@ -400,12 +400,22 @@ colnames(effect_sizes) <- c("Position", "Effect size")
 effect_sizes <- as.data.frame(effect_sizes)
 pvalues <- as.data.frame(pvalues)
 
-saveRDS(effect_sizes, file='lm_effect_sizes.rds')
-saveRDS(pvalues, file="lm_p_values.rds")
+#saveRDS(effect_sizes, file='lm_effect_sizes.rds')
+#saveRDS(pvalues, file="lm_p_values.rds")
 
 ```
 
-```{r P_value_histogram, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
+
+Žemiau pateikiamoje histogramoje yra vaizduojamas gautų *p* verčių
+pasiskirstymas ieškant pozicijų susijusių su amžiumi ir kontroliuojant
+papildomus pašalinius efektus. Šiuo atveju buvo pasirinkti kontroliuojami 
+pašaliniai efektai buvo aspirino vartojimas ir polipų buvimas. 
+
+Kaip ir prieš tai buvusioje *p* verčių paskirstymo histogramoje buvo gautas 
+ganėtinai didelis skaičius *p* verčių, kuriuos yra mažesnės už 0.05.
+
+
+```{r lm_P_value_histogram, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
 values <- as.numeric(pvalues[,2])
 p_df <- data.frame(positions = c(pvalues$Position), pvals = values)
 
@@ -431,6 +441,60 @@ p1 <- ggplot(p_df, aes(x = pvals)) +
                                               colour = "#05076a"))
 print(p1)
 ```
+
+
+
+```{r lm_Min_p_value_visualization, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
+# Ordering a p-value dataframe and extracting 5 rows with the lowest p-value:
+#min_Ps <- p_df[order(p_df$pvals),][1:5,]
+
+# Determining position names that have the lowest p-values:
+position_names <- p_df[order(p_df$pvals),][1:5,]$positions
+
+nonuser_len <- length(colnames(beta_nonusers))
+user_len <- length(colnames(beta_users))
+
+# Creating dataframes with modification values of 5 positions (cg01760763,
+# cg20768358, cg07179016, cg14510359, cg04083753):
+anon_users <- beta_nonusers[position_names, ] %>%
+                `colnames<-`(c(rep("Aspirin nonusers", nonuser_len))) %>%
+                melt()
+
+a_users <- beta_users[position_names, ] %>%
+              `colnames<-`(c(rep("Aspirin users", user_len))) %>%
+              melt()
+
+# Combining two dataframes (of aspirin non-users and aspirin users) into one:
+group_modifications <- rbind(anon_users, a_users) %>%
+                          setNames(., c("Position", "User_nonuser",
+                                   "Modification_value"))
+
+p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
+                                      color = Position)) +
+        geom_point() +
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) + 
+        labs(title = "DNA modification values",
+             subtitle = "5 positions with the lowest p values",
+             x = "Aspirin nonusers and users", y = "Modification value") +
+        facet_grid(. ~ Position) +
+        theme(axis.text.x = element_text(vjust = 0.5, size = 8,
+                                         colour = "black"),
+              plot.title = element_text(hjust = 0.5, face = "bold"),
+              plot.subtitle = element_text(hjust = 0.5, face = "bold"),
+              panel.background = element_rect(colour = "#05076a", size = 0.5,
+                                              fill = "#eaeafd",
+                                              linetype = "solid"),
+              panel.grid.major = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#05076a"), 
+              panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#05076a"),
+              strip.background = element_rect(fill = "#2f4581"),
+              strip.text = element_text(color = "white", face = "bold"),
+              legend.position = "none")
+
+print(p2 + scale_color_brewer(palette = "Set1"))
+```
+
 
 # Pilnas genų sąrašas
 # Įskaitomi visi genai, nepaisant to, kiek patikimos yra juos atitinkančios
