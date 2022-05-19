@@ -408,9 +408,11 @@ colnames(effect_sizes) <- c("Position", "Effect size")
 effect_sizes <- as.data.frame(effect_sizes)
 pvalues <- as.data.frame(pvalues)
 
-saveRDS(effect_sizes, file='lm_effect_sizes.rds')
-saveRDS(pvalues, file="lm_p_values.rds")
+#saveRDS(effect_sizes, file='lm_effect_sizes.rds')
+#saveRDS(pvalues, file="lm_p_values.rds")
 
+effect_sizes <- readRDS("lm_effect_sizes.rds")
+pvalues <- readRDS("lm_p_values.rds")
 ```
 
 
@@ -460,6 +462,8 @@ print(p1)
 position_names <- p_df[order(p_df$pvals),][1:5,]$positions
 
 colnames(beta_nonusers)
+
+beta_nonusers
 
 nonuser_len <- length(colnames(beta_nonusers))
 user_len <- length(colnames(beta_users))
