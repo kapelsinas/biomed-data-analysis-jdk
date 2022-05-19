@@ -25,6 +25,11 @@ pData_col <- readRDS("data/pData.Rds")         # Sample (column) matrix
 annot_row <- readRDS("data/annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
 
+#samples with cleaned 96 
+vec <- colnames(beta)
+samples.clean <-samples[samples$Basename %in% vec, ]
+
+
 colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 ```
 
@@ -377,26 +382,29 @@ write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
 ```{r 4.1, warning=FALSE, include=FALSE }
 # Using linear models to create two models to control "outsider" effects.
 
-
-samples<-samples[complete.cases(samples),]
-
-samples_age <- samples$age
+pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
+effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
 
 for (row in 1:nrow(beta)) {
   
-  
-  mod0 <- lm(beta[row, ] ~ age, data = samples)
-  mod1 <- lm(beta[row, ] ~ age + aspirin, data= samples)
+  mod0 <- lm(beta[row, ] ~ age, data= samples.clean)
+  mod1 <- lm(beta[row, ] ~ age + aspirin, data= samples.clean)
   res  <- anova(mod0, mod1)
-  
   
   effect_sizes[row,] <- coefficients(mod1)[2]
   pvalues[row,] <- res[2,6]
   
 }
 
+colnames(pvalues) <- c("Position", "P-value")
+colnames(effect_sizes) <- c("Position", "Effect size")
 
-samples
+effect_sizes <- as.data.frame(effect_sizes)
+pvalues <- as.data.frame(pvalues)
+
+# saveRDS(effect_sizes, file='effect_sizes.rds')
+# saveRDS(pvalues, file="p_values.rds")
+
 
 ```
 
