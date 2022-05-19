@@ -376,10 +376,28 @@ write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
 
 ```{r 4.1, warning=FALSE, include=FALSE }
 # Using linear models to create two models to control "outsider" effects.
-mod0 <- lm(age ~ aspirin + clonic_location, data = samples)
-mod1 <- lm(age ~ aspirin + clonic_location + polyp, data = samples)
 
-res <- anova(mod0, mod1)
+
+samples<-samples[complete.cases(samples),]
+
+samples_age <- samples$age
+
+for (row in 1:nrow(beta)) {
+  
+  
+  mod0 <- lm(beta[row, ] ~ age, data = samples)
+  mod1 <- lm(beta[row, ] ~ age + aspirin, data= samples)
+  res  <- anova(mod0, mod1)
+  
+  
+  effect_sizes[row,] <- coefficients(mod1)[2]
+  pvalues[row,] <- res[2,6]
+  
+}
+
+
+samples
+
 ```
 
 # Pilnas genų sąrašas
