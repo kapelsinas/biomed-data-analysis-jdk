@@ -29,7 +29,6 @@ samples <- read.csv("samples2.csv")
 vec <- colnames(beta)
 samples.clean <-samples[samples$Basename %in% vec, ]
 
-
 colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 ```
 
@@ -386,6 +385,10 @@ pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
 effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
 
 for (row in 1:nrow(beta)) {
+  
+  if ( row %% 10000 == 0 ){
+    print (row)
+  }
   
   mod0 <- lm(beta[row, ] ~ age, data= samples.clean)
   mod1 <- lm(beta[row, ] ~ age + aspirin, data= samples.clean)
