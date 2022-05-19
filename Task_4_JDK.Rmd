@@ -461,10 +461,6 @@ print(p1)
 # Determining position names that have the lowest p-values:
 position_names <- p_df[order(p_df$pvals),][1:5,]$positions
 
-colnames(beta_nonusers)
-
-beta_nonusers
-
 nonuser_len <- length(colnames(beta_nonusers))
 user_len <- length(colnames(beta_users))
 
@@ -509,6 +505,58 @@ p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
 
 print(p2 + scale_color_brewer(palette = "Set1"))
 ```
+```{r}
+fdr <- p.adjust(pvalues$`P-value`, method = "fdr", n = length(pvalues$`P-value`))
+bf <- p.adjust(pvalues$`P-value`, method = "bonferroni", n = length(pvalues$`P-value`))
+
+p_corr <- data.frame(Position = pvalues$Position, No_correction = pvalues$`P-value`,
+                     FDR = fdr, Bonferroni = bf)
+
+positions <- data.table(correction = c("No correction","FDR","Bonferroni"),
+   position_count = c(length(rownames(p_corr[p_corr$No_correction <= 0.05, ])),
+                   length(rownames(p_corr[p_corr$FDR <= 0.05, ])),
+                   length(rownames(p_corr[p_corr$Bonferroni <= 0.05, ])))) %>%
+   as_huxtable() %>%
+   set_bold(1, everywhere, TRUE) %>%
+   set_all_borders(1) %>%
+   map_text_color(everywhere, "position_count",
+                  by_colorspace("navy", "red", "darkgreen")) %>%
+   map_italic(everywhere, "correction", by_regex("Merc.*" = TRUE)) %>%
+   set_bold(1, everywhere, TRUE) %>%
+   set_background_color(1:1, everywhere , "lightgreen") %>%
+  set_align(1,1, "center")
+
+align(positions) <- "center"
+print(positions)
+```
+
+```{r GO_analysis_selected_genes_by_p, warning=FALSE, include=FALSE}
+# Extracting 'UCSC_RefGene_Name' column values of positions that have a p value
+# which is lower or equal to 0.05 after performing FDR correction:
+selected_pos <- p_corr[p_corr$FDR <= 0.05, 1] %>% 
+                  annot_row[.,]
+fgenes <- c(unique(selected_pos$UCSC_RefGene_Name)) %>%
+               stri_remove_empty(., na_empty = FALSE)
+
+# Handling lines with gene name repetitions:
+modify_lines <- function(x) {
+      if (grepl(";", x) == TRUE) {
+        smatch <- str_match(x, pattern = regex("([a-zA-Z0-9]*);",
+                                               ignore_case = T))
+        smatch[1, 1] %>% substr(., 1, nchar(.) - 1)
+      } else { x }
+}
+
+# Making a unique "foreground" gene name list:
+flist <- lapply(fgenes, modify_lines)
+fgene_list <- data.table(Genes = unique(unlist(flist)))
+
+write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
+            col.names = FALSE, row.names = FALSE)
+```
+
+
+
 
 
 # Pilnas genų sąrašas
