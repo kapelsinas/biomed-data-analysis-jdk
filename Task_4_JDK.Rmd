@@ -386,20 +386,12 @@ effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
 sprintf("Start time: %s", format(Sys.time(), "%D %H:%M:%S"))
 
 for (row in 1:nrow(beta)) {
-  
-  if ( row %% 10000 == 0 ){
-    print (row)
-    print(Sys.time())
-
-  }
-  
   mod0 <- lm(beta[row, ] ~ aspirin + polyp, data= samples.clean)
   mod1 <- lm(beta[row, ] ~ age + aspirin + polyp, data= samples.clean)
   res  <- anova(mod0, mod1)
   
   effect_sizes[row,] <- coefficients(mod1)[2]
   pvalues[row,] <- res[2,6]
-  
 }
 
 colnames(pvalues) <- c("Position", "P-value")
