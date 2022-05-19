@@ -384,13 +384,22 @@ write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
 #pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
 #effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
 
+print (Sys.time())
 for (row in 1:nrow(beta)) {
   mod0 <- lm(beta[row, ] ~ aspirin + polyp, data= samples.clean)
   mod1 <- lm(beta[row, ] ~ age + aspirin + polyp, data= samples.clean)
   res  <- anova(mod0, mod1)
   
-  effect_sizes[row,] <- coefficients(mod1)[2]
-  pvalues[row,] <- res[2,6]
+  rowname <- rownames(beta)[row]
+  effect_sizes[row,] <- c(rowname, coefficients(mod1)[2])
+  pvalues[row,] <- c(rowname, res[2,6])
+  
+   if (row %% 1000 == 0) {
+     print(row)
+     print( Sys.time())
+   }
+  
+  
 }
 
 colnames(pvalues) <- c("Position", "P-value")
@@ -399,8 +408,8 @@ colnames(effect_sizes) <- c("Position", "Effect size")
 effect_sizes <- as.data.frame(effect_sizes)
 pvalues <- as.data.frame(pvalues)
 
-#saveRDS(effect_sizes, file='lm_effect_sizes.rds')
-#saveRDS(pvalues, file="lm_p_values.rds")
+saveRDS(effect_sizes, file='lm_effect_sizes.rds')
+saveRDS(pvalues, file="lm_p_values.rds")
 
 ```
 
@@ -449,6 +458,8 @@ print(p1)
 
 # Determining position names that have the lowest p-values:
 position_names <- p_df[order(p_df$pvals),][1:5,]$positions
+
+colnames(beta_nonusers)
 
 nonuser_len <- length(colnames(beta_nonusers))
 user_len <- length(colnames(beta_users))
