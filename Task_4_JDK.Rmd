@@ -128,37 +128,43 @@ ir nevartojimas įtakoja DNR modifikacijų reikšmes.
 ```{r T_test_effect_size_calculations, warning=FALSE, include=FALSE}
 # Creating an empty matrixes that will store p values and effect sizes
 # for each position:
-pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
-effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
+pvalues <- matrix(NA, nrow = nrow(beta), ncol = 2)
+effect_sizes <- matrix(NA, nrow = nrow(beta), ncol = 2)
 
 # Running a loop that performs t-test, effect size calculations and appends
 # p-values, effect size values into matrixes:
-sprintf("Start time: %s", format(Sys.time(), "%D %H:%M:%S"))
+#sprintf("Start time: %s", format(Sys.time(), "%D %H:%M:%S"))
+
 for (row in 1:nrow(beta)) {
   vec1 <- c(beta_nonusers[row, ])
   vec2 <- c(beta_users[row, ])
   rowname <- rownames(beta_nonusers)[row]
   
   row_pvalue <- c(rowname, t.test(vec1, vec2)$p.value)
-  effect_size <- c(rowname, (mean(vec1) - mean(vec2)) /
-                     sqrt((var(vec1) + var(vec2)) / 2))
-  # if (row %% 10000 == 0) {
-  #   print(row)
-  # }
-  # 
-  effect_sizes[row,] <- effect_size
-  pvalues[row,] <- row_pvalue
+  effect_size <- c(rowname, (mean(vec1) - mean(vec2)))
+
+  effect_sizes[row, ] <- effect_size
+  pvalues[row, ] <- row_pvalue
+
 }
 sprintf("End time: %s", format(Sys.time(), "%D %H:%M:%S"))
 
 colnames(pvalues) <- c("Position", "P-value")
 colnames(effect_sizes) <- c("Position", "Effect size")
 
+#sprintf("End time: %s", format(Sys.time(), "%D %H:%M:%S"))
+
+colnames(pvalues) <- c("Position", "Pvalue")
+colnames(effect_sizes) <- c("Position", "Effect_size")
+
 effect_sizes <- as.data.frame(effect_sizes)
 pvalues <- as.data.frame(pvalues)
 
 # saveRDS(effect_sizes, file='effect_sizes.rds')
 # saveRDS(pvalues, file="p_values.rds")
+
+# pvalues <- readRDS("p_values.rds")
+# effect_sizes <- readRDS("effect_sizes.rds")
 ```
 
 Žemiau pateikiamoje histogramoje yra vaizduojamas gautų *p* verčių
