@@ -830,7 +830,6 @@ REIKIA APRAŠYMO...
 ```{r Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
 df <- data.frame(P = as.numeric(p_effects$P),
                  Effect_size = as.numeric(p_effects$Effect))
-df
 df <- df %>%
   mutate(significance = case_when(Effect_size > 0 & P <= 0.05 ~ "up",
                                   Effect_size <= 0.5 & P <= 0.05 ~ "down",
@@ -854,8 +853,8 @@ p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
         scale_alpha_manual(values = alphas) +
         labs(title = "P and effect size values of all chromosomes",
              x = "Effect size", y = "-log10(P)") +
-        scale_x_continuous(breaks = c(seq(-0.05, 0, 0.05)),
-                           limits = c(-0.05, 0.05)) +
+        scale_x_continuous(breaks = c(seq(-0.02, 0, 0.02)),
+                           limits = c(-0.02, 0.02)) +
         theme(axis.text.x = element_text(vjust = 0.5, size = 8,
                                          colour = "black"),
               plot.title = element_text(hjust = 0.5, face = "bold"),
@@ -973,6 +972,7 @@ print(GO_proc)
 
 
 ```{r lm_GO_analysis_Function, echo=FALSE, message=FALSE, warning=FALSE}
+GO_func <- read.csv("GOrilla/lm_gene_function.csv")
 
 GO_func <- GO_func[order(GO_func[, "P.value"]), , drop = FALSE] %>%
               as.data.table() %>%
