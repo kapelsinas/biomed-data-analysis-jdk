@@ -825,12 +825,10 @@ print(p3)
 
 ### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms
 
-REIKIA APRAŠYMO...
-
-```{r Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
+Žemiau pateiktame pateiktame *Volcano* grafike 
+```{r lm_Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
 df <- data.frame(P = as.numeric(p_effects$P),
                  Effect_size = as.numeric(p_effects$Effect))
-df
 df <- df %>%
   mutate(significance = case_when(Effect_size > 0 & P <= 0.05 ~ "up",
                                   Effect_size <= 0.5 & P <= 0.05 ~ "down",
@@ -842,7 +840,7 @@ alphas <- c("up" = 1, "down" = 1, "ns" = 0.5)
 
 p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
              alpha = significance)) + 
-        geom_point(shape = 21,color='transparent',  alpha = 0.7) + 
+        geom_point(shape = 21,color='transparent',  alpha = 0.8) + 
         geom_hline(yintercept = -log10(0.05), linetype = "dashed", size = 0.7,
                    color = "red") + 
         geom_vline(xintercept = c(log2(0.5), log2(2)), linetype = "dashed") +
@@ -854,8 +852,8 @@ p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
         scale_alpha_manual(values = alphas) +
         labs(title = "P and effect size values of all chromosomes",
              x = "Effect size", y = "-log10(P)") +
-        scale_x_continuous(breaks = c(seq(-0.05, 0, 0.05)),
-                           limits = c(-0.05, 0.05)) +
+        scale_x_continuous(breaks = c(seq(-0.02, 0, 0.02)),
+                           limits = c(-0.02, 0.02)) +
         theme(axis.text.x = element_text(vjust = 0.5, size = 8,
                                          colour = "black"),
               plot.title = element_text(hjust = 0.5, face = "bold"),
@@ -877,7 +875,7 @@ plot(p4)
 Žemiau pateiktoje lentelėje nurodomi reikšmingų pozicijų skaičiai, neatlikus *p*
 verčių korekcijos bei pritaikius ***FDR*** ir ***Bonferroni*** korekcijas:
 
-```{r}
+```{r lm_P_value_corrections, echo=FALSE, message=FALSE, warning=FALSE}
 fdr <- p.adjust(pvalues$`P-value`, method = "fdr", n = length(pvalues$`P-value`))
 bf <- p.adjust(pvalues$`P-value`, method = "bonferroni", n = length(pvalues$`P-value`))
 
@@ -903,13 +901,10 @@ print(positions)
 ```
 
 
-## 4.3. Gene Ontology Enrichment analizė
+## 4.3. Gene Ontology Enrichment analizė kontroliuojant pašalinius efektus.
 
-Atlikus *p* verčių korekciją ir įvertinus, kurios DNR pozicijos turi
-statistiškai patikimus modifikacijos įverčių vidurkius, galima analizuoti
-atrinktas DNR pozicijas, pasinaudojus specialiu ***GOrilla*** įrankiu, kuris
-padeda daryti įvairias išvadas apie konkrečiose genominėse pozicijose esančius
-genus.
+Pasinaudojus ***GOrilla*** įrankiu buvo analizuojami genai esantys konkrečiose
+genominėse pozicijose.
 
 ```{r lm_GO_analysis_selected_genes_by_p, message=FALSE, warning=FALSE, include=FALSE}
 # Extracting 'UCSC_RefGene_Name' column values of positions that have a p value
@@ -949,6 +944,13 @@ write.table(bgene_list, file = "background_gene_list.txt", quote = FALSE,
             col.names = FALSE, row.names = FALSE)
 ```
 
+Kaip ir prieš tai atlikus *Gene Ontology Enrichment* analizę su ***GOrilla*** 
+įrankiu, genai buvo nagrinėjami pagal tris kategorijas:
+
+1.  Kokiuose procesuose dalyvauja;\
+2.  Kokias funkcijas atlieka;\
+3.  Kokiuose biologiniuose komponentuose (ląstelėse ir pan.) aptinkami.
+
 #### Procesai
 
 Žemiau pateikiamoje lentelėje nurodomi 10 procesų, kuriuose dalyvauja atrinkti
@@ -957,7 +959,7 @@ genai:
 ```{r lm_GO_analysis_Process, echo=FALSE, message=FALSE, warning=FALSE}
 GO_proc <- read.csv("GOrilla/lm_gene_process.csv")
 
-GO_proc <- GO_proc[order(GO_proc[, "P.value"]), , drop = FALSE] %>%
+GO_proc <- GO_proc[order(GO_proc[, "P_value"]), , drop = FALSE] %>%
               as.data.table() %>%
               as_huxtable() %>%
               set_bold(1, everywhere, TRUE) %>%
@@ -969,12 +971,19 @@ align(GO_proc) <- "center"
 print(GO_proc)
 ```
 
+Lentelėje pateikti duomenys rodo, kad atrinktuose genuose kaip ir prieš tai
+atliktoje procesų analizėje didžioji dalis genų dalyvauja **anatomijos** ir 
+**organų formavimosi** procesuose.
+
 #### Funkcijos
 
+Žemiau pateikiamoje lentelėje nurodomi 10 funkcijų, kurias atlieka pasirinkti 
+genai :
 
 ```{r lm_GO_analysis_Function, echo=FALSE, message=FALSE, warning=FALSE}
+GO_func <- read.csv("GOrilla/lm_gene_function.csv")
 
-GO_func <- GO_func[order(GO_func[, "P.value"]), , drop = FALSE] %>%
+GO_func <- GO_func[order(GO_func[, "P_value"]), , drop = FALSE] %>%
               as.data.table() %>%
               as_huxtable() %>%
               set_bold(1, everywhere, TRUE) %>%
@@ -986,8 +995,15 @@ align(GO_func) <- "center"
 print(GO_func)
 ```
 
+Remiantis lentelėje pateikta informacija apie funkcijas, kurias atlieka genai.
+Galime pamatyti kad didžioji dalis genų atlieka prisijungimo funkciją. Taip pat
+matome, kad labai stipriai išsiskyria genai, kurie atlieka baltymų prisijungimo
+funkcija.
 
 #### Biologiniai komponentai
+
+Žemiau pateikiamoje lentelėje nurodomi 10 biologinių komponentų, kuriuose
+nustatomi atrinktų genų produktai:
 
 ```{r lm_GO_analysis_Component, echo=FALSE, message=FALSE, warning=FALSE}
 GO_comp <- read.csv("GOrilla/lm_gene_component.csv")
@@ -1002,6 +1018,11 @@ GO_comp <- GO_comp[order(GO_comp[, "P_value"]), , drop = FALSE] %>%
 align(GO_comp) <- "center"
 print(GO_comp)
 ```
+Iš lentelėje matomų biologinių komponentų galime pamatyti, kad didžioji dalis 
+genų yra iš lastelės sandaros dalių, tokių kaip membrana, nucleoplazmą.
 
+Apibendrinant lentesė pateiktus duomenis kontroliuojant pašalinius efektus, 
+galima padaryti išvadą, kad didžioji dalis genų dalyvauja **anatomijos**,
+**organų** ir **lastelės sandaros dalių** formavime.
 
 # Papildomos užduotys
