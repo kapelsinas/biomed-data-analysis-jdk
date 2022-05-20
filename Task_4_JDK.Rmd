@@ -951,10 +951,13 @@ write.table(bgene_list, file = "background_gene_list.txt", quote = FALSE,
 
 #### Procesai
 
+Žemiau pateikiamoje lentelėje nurodomi 10 procesų, kuriuose dalyvauja atrinkti
+genai:
 
 ```{r lm_GO_analysis_Process, echo=FALSE, message=FALSE, warning=FALSE}
-GO_proc <- read.csv("gene_process.csv")
-GO_proc <- GO_proc[order(GO_proc[, "P_value"]), , drop = FALSE] %>%
+GO_proc <- read.csv("GOrilla/lm_gene_process.csv")
+
+GO_proc <- GO_proc[order(GO_proc[, "P.value"]), , drop = FALSE] %>%
               as.data.table() %>%
               as_huxtable() %>%
               set_bold(1, everywhere, TRUE) %>%
@@ -970,8 +973,8 @@ print(GO_proc)
 
 
 ```{r lm_GO_analysis_Function, echo=FALSE, message=FALSE, warning=FALSE}
-GO_func <- read.csv("gene_function.csv")
-GO_func <- GO_func[order(GO_func[, "P_value"]), , drop = FALSE] %>%
+
+GO_func <- GO_func[order(GO_func[, "P.value"]), , drop = FALSE] %>%
               as.data.table() %>%
               as_huxtable() %>%
               set_bold(1, everywhere, TRUE) %>%
@@ -987,8 +990,8 @@ print(GO_func)
 #### Biologiniai komponentai
 
 ```{r lm_GO_analysis_Component, echo=FALSE, message=FALSE, warning=FALSE}
-GO_comp <- read.csv("gene_component.csv")
-GO_comp <- GO_comp[order(GO_comp[, "P_value"]), , drop = FALSE] %>%
+GO_comp <- read.csv("GOrilla/lm_gene_component.csv")
+GO_comp <- GO_comp[order(GO_comp[, "P.value"]), , drop = FALSE] %>%
               as.data.table() %>%
               as_huxtable() %>%
               set_bold(1, everywhere, TRUE) %>%
