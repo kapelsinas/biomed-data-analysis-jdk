@@ -612,12 +612,28 @@ išsikišimų) sudėtį.
 
 # **4. Grupių analizė, kontroliuojant pašalinius efektus**
 
+Ketvirtoje užudoties dalyje statistinis hipotezių testavimas buvo atliktas 
+naudojant tiesinius modelius kontroliuojant pašalinius efektus:
+
+-   Nuliniam modeliui pašaliniai efektai buvo pasirinkti aspirino vartojimas 
+ir polypų buvimas.
+-   Pirmajam modeliui pašaliniai efektai buvo amžius, aspirino vartojimas ir
+polypų buvimas.
+
+***(p vertės)*** buvo gautos iš antrojo tiesinio modelio amžiaus koeficiento. 
+***efekto dydis*** buvo gautas naudojant dispersinė analizė, analizuojant 
+vidurkių skirtumą tarp nulinio ir pirmojo modelio.
+
 ```{r 4.1, warning=FALSE, include=FALSE }
-# Using linear models to create two models to control "outsider" effects.
 
 #pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
 #effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
 
+help(anova)
+
+# Using linear models to create two models to control "outsider" effects.
+# Using linear model "mod1" age coefficient to get effect_size and Anova table
+# from mod0 and mod1 to get pvalue
 for (row in 1:nrow(beta)) {
   mod0 <- lm(beta[row, ] ~ aspirin + polyp, data= samples.clean)
   mod1 <- lm(beta[row, ] ~ age + aspirin + polyp, data= samples.clean)
