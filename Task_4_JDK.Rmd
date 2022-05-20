@@ -749,7 +749,6 @@ p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
 
 print(p2 + scale_color_brewer(palette = "Set1"))
 ```
-
 ### *Manhattan* grafikas *8* chromosomos *p* vertėms atvaizduoti
 
 Žemiau yra pateikiamas ***Manhattan*** grafikas, kuriame vaizduojamos
@@ -760,7 +759,6 @@ Grafike galima pastebėti, kad žemiau raudonos linijos esančios *p* vertės yr
 panašios. Be to, vertės, esančios žemiau raudonos linijos, yra laikomos
 statistiškai nereikšmingomis. Tos grafiko vietos, kuriose kaupiasi daug panašių
 *p* verčių yra vaizduojamos gelsva spalva.
-
 
 ```{r lm_Chromosome_manhattan_plot, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
 p_effects <- data.frame(position = pvalues$Position, P = pvalues$`P-value`,
@@ -888,7 +886,16 @@ align(positions) <- "center"
 print(positions)
 ```
 
-```{r GO_analysis_selected_genes_by_p, warning=FALSE, include=FALSE}
+
+## 4.3. Gene Ontology Enrichment analizė
+
+Atlikus *p* verčių korekciją ir įvertinus, kurios DNR pozicijos turi
+statistiškai patikimus modifikacijos įverčių vidurkius, galima analizuoti
+atrinktas DNR pozicijas, pasinaudojus specialiu ***GOrilla*** įrankiu, kuris
+padeda daryti įvairias išvadas apie konkrečiose genominėse pozicijose esančius
+genus.
+
+```{r lm_GO_analysis_selected_genes_by_p, message=FALSE, warning=FALSE, include=FALSE}
 # Extracting 'UCSC_RefGene_Name' column values of positions that have a p value
 # which is lower or equal to 0.05 after performing FDR correction:
 selected_pos <- p_corr[p_corr$FDR <= 0.05, 1] %>% 
@@ -899,9 +906,9 @@ fgenes <- c(unique(selected_pos$UCSC_RefGene_Name)) %>%
 # Handling lines with gene name repetitions:
 modify_lines <- function(x) {
       if (grepl(";", x) == TRUE) {
-        smatch <- str_match(x, pattern = regex("([a-zA-Z0-9]*);",
-                                               ignore_case = T))
-        smatch[1, 1] %>% substr(., 1, nchar(.) - 1)
+        #smatch <- str_match(x, pattern = regex("([a-zA-Z0-9]*);", ignore_case = T))
+        #smatch[1, 1] %>% substr(., 1, nchar(.) - 1)
+        strsplit(x, ";")
       } else { x }
 }
 
@@ -912,5 +919,70 @@ fgene_list <- data.table(Genes = unique(unlist(flist)))
 write.table(fgene_list, file = "foreground_gene_list.txt", quote = FALSE,
             col.names = FALSE, row.names = FALSE)
 ```
+
+```{r lm_GO_analysis_all_genes, warning=FALSE, include=FALSE}
+# Extracting 'UCSC_RefGene_Name' column values for the entire positions:
+bgenes <- c(unique(annot_row$UCSC_RefGene_Name)) %>%
+               stri_remove_empty(., na_empty = FALSE)
+
+# Making a unique "background" gene name list:
+blist <- lapply(bgenes, modify_lines)
+bgene_list <- data.table(Genes = unique(unlist(blist)))
+
+write.table(bgene_list, file = "background_gene_list.txt", quote = FALSE,
+            col.names = FALSE, row.names = FALSE)
+```
+
+#### Procesai
+
+
+```{r lm_GO_analysis_Process, echo=FALSE, message=FALSE, warning=FALSE}
+GO_proc <- read.csv("gene_process.csv")
+GO_proc <- GO_proc[order(GO_proc[, "P_value"]), , drop = FALSE] %>%
+              as.data.table() %>%
+              as_huxtable() %>%
+              set_bold(1, everywhere, TRUE) %>%
+              set_all_borders('NA') %>%
+              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_align(1, 1, "center")
+
+align(GO_proc) <- "center"
+print(GO_proc)
+```
+
+#### Funkcijos
+
+
+```{r lm_GO_analysis_Function, echo=FALSE, message=FALSE, warning=FALSE}
+GO_func <- read.csv("gene_function.csv")
+GO_func <- GO_func[order(GO_func[, "P_value"]), , drop = FALSE] %>%
+              as.data.table() %>%
+              as_huxtable() %>%
+              set_bold(1, everywhere, TRUE) %>%
+              set_all_borders('NA') %>%
+              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_align(1, 1, "center")
+
+align(GO_func) <- "center"
+print(GO_func)
+```
+
+
+#### Biologiniai komponentai
+
+```{r lm_GO_analysis_Component, echo=FALSE, message=FALSE, warning=FALSE}
+GO_comp <- read.csv("gene_component.csv")
+GO_comp <- GO_comp[order(GO_comp[, "P_value"]), , drop = FALSE] %>%
+              as.data.table() %>%
+              as_huxtable() %>%
+              set_bold(1, everywhere, TRUE) %>%
+              set_all_borders('NA') %>%
+              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_align(1, 1, "center")
+
+align(GO_comp) <- "center"
+print(GO_comp)
+```
+
 
 # Papildomos užduotys
