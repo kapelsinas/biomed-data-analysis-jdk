@@ -27,6 +27,9 @@ beta <- readRDS("dat8.Rds")               # Modification value matrix
 pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
 annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
+
+vec <- colnames(beta)
+samples.clean <-samples[samples$Basename %in% vec, ]
 colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
 ```
 
@@ -142,7 +145,6 @@ effect_sizes <- matrix(NA, nrow = nrow(beta), ncol = 2)
   
 #  row_pvalue <- c(rowname, t.test(vec1, vec2)$p.value)
 #  effect_size <- c(rowname, (mean(vec1) - mean(vec2)))
-
 #  effect_sizes[row, ] <- effect_size
 #  pvalues[row, ] <- row_pvalue
 #}
@@ -160,7 +162,6 @@ effect_sizes <- matrix(NA, nrow = nrow(beta), ncol = 2)
 
 pvalues <- readRDS("p_values.rds")
 effect_sizes <- readRDS("effect_sizes.rds")
-
 p_effects <- data.frame(position = pvalues$Position, P = pvalues$Pvalue,
                         Effect = effect_sizes$Effect_size)
 ```
@@ -238,7 +239,6 @@ reikšmės aspirino nevartojančių moterų grupėje yra nustatomos.
 
 # Determining position names that have the lowest p-values:
 position_names <- p_df[order(p_df$pvals),][1:5,]$positions
-
 nonuser_len <- length(colnames(beta_nonusers))
 user_len <- length(colnames(beta_users))
 
@@ -247,7 +247,6 @@ user_len <- length(colnames(beta_users))
 anon_users <- beta_nonusers[position_names, ] %>%
                 `colnames<-`(c(rep("Aspirin nonusers", nonuser_len))) %>%
                 melt()
-
 a_users <- beta_users[position_names, ] %>%
               `colnames<-`(c(rep("Aspirin users", user_len))) %>%
               melt()
@@ -279,7 +278,6 @@ p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
               strip.background = element_rect(fill = "#2f4581"),
               strip.text = element_text(color = "white", face = "bold"),
               legend.position = "none")
-
 print(p2 + scale_color_brewer(palette = "Set1"))
 ```
 
@@ -295,7 +293,7 @@ statistiškai nereikšmingomis. Tos grafiko vietos, kuriose kaupiasi daug panaš
 *p* verčių yra vaizduojamos gelsva spalva.
 
 ```{r Chromosome_manhattan_plot, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
-# Extracting position names, position numbers and p values of the 8th chromosome:
+# Extracting position names, position numbers and p values of the 8th chr:
 chr <- annot_row[annot_row$chr == "chr8", ]$Name
 bps <- annot_row[annot_row$chr == "chr8", ]$pos
 pvals <- p_effects[p_effects$position %in% chr, "P"]
@@ -333,7 +331,6 @@ p3 <- ggplot(chr_p_effects, aes(x = BP, y = P)) +
                                               colour = "#2f0e2e"), 
               panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
                                               colour = "#2f0e2e"))
-
 print(p3)
 ```
 
@@ -349,51 +346,67 @@ pozicijos yra nustatoma
 ***`r chr_p_effects[14036, "BP"] - chr_p_effects[14036, "BP"]`*** genominių
 pozicijų iškrita, apie kurią nėra jokios informacijos.
 
-### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms
+### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms atvaizduoti
 
-REIKIA APRAŠYMO...
+Žemiau vaizduojamas grafikas, kuriame vizualizuojamos visų chromosomų *p*
+vertės ir efekto dydžiai. Žemiau raudonos linijos pilka spalva
+yra atvaizduojamos visos *p* vertės, kurias logaritmavus, jos buvo mažesnės
+už *-log(0.05)* reikšmę. Visos šios reikšmės yra laikomos statistiškai
+nereikšmingomis.
 
-```{r Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
+Tamsiai raudona spalva pavaizduoti taškai nėra laikomi statistiškai
+patikimais, nepaisant to, jog logaritmuotos *p* vertės yra didesnės už
+*-log(0.05)*. Taip yra todėl, nes šiuo atveju reikia atsižvelgti ir į
+efekto dydžio reikšmę. Reikšmės laikomos patikimomis tada, kai efekto dydžio
+reikšmė viršija 0.2 ir *p* reikšmė viršija *-log(0.05)* reikšmę.
+
+Grafike yra pavaizduoti oranžiniai taškai, kurie rodo statistiškai patikimas
+reikšmes. Tai reiškia, jog atsižvelgus į efekto dydžius ir logaritmuotas
+*p* vertes, oranžine spalva pažymėti taškai yra reikšmingi ir gali būti
+panaudoti tolimesnėms analizėms.
+
+```{r Chromosome_volcano_plot, fig.align="center", fig.height=3, fig.width=4, echo=FALSE, message=FALSE, warning=FALSE}
+# Forming a dataframe that will be used for making a Volcano plot:
 df <- data.frame(P = as.numeric(p_effects$P),
                  Effect_size = as.numeric(p_effects$Effect))
-df
+
+# Defining when effect sizes and P values will be marked as 'up' and 'down':
 df <- df %>%
-  mutate(significance = case_when(Effect_size > 0 & P <= 0.05 ~ "up",
-                                  Effect_size <= 0.5 & P <= 0.05 ~ "down",
+  mutate(significance = case_when(Effect_size > 0.2 & P <= 0.05 ~ "up",
+                                  Effect_size <= 0.2 & P <= 0.05 ~ "down",
                                   TRUE ~ "ns"))   
- 
-cols <- c("up" = "#ffdc81", "down" = "#7e0a23", "ns" = "grey") 
-sizes <- c("up" = 0.2, "down" = 0.2, "ns" = 0.1) 
+
+# Defining colors, sizes and alpha values for the 'up' and 'down' numbers:
+cols <- c("up" = "#f78e0e", "down" = "#7e0a23", "ns" = "grey") 
+sizes <- c("up" = 0.5, "down" = 0.5, "ns" = 0.1) 
 alphas <- c("up" = 1, "down" = 1, "ns" = 0.5)
 
 p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
              alpha = significance)) + 
-        geom_point(shape = 21, colour = "black") + 
+        geom_point(shape = 21, color = "transparent", alpha = 0.7) + 
         geom_hline(yintercept = -log10(0.05), linetype = "dashed", size = 0.7,
                    color = "red") + 
         geom_vline(xintercept = c(log2(0.5), log2(2)), linetype = "dashed") +
-        annotate("text", x = 0.4, y = 3, label = stringr::str_wrap("Line
-                 indicating where values lose significance", width = 20),
-                 size = 3, color = "red", fontface = 4) +
+        annotate("text", x = 0.18, y = 0.2, label = stringr::str_wrap("Line
+                 indicating where values lose significance considering effect
+                 sizes and P values", width = 40),
+                 size = 2, color = "red", fontface = 4) +
         scale_fill_manual(values = cols) +
         scale_size_manual(values = sizes) +
         scale_alpha_manual(values = alphas) +
         labs(title = "P and effect size values of all chromosomes",
              x = "Effect size", y = "-log10(P)") +
-        scale_x_continuous(breaks = c(seq(-0.5, 0, 0.5)),
-                           limits = c(-0.5, 0.5)) +
-        theme(axis.text.x = element_text(vjust = 0.5, size = 8,
+        scale_x_continuous(breaks = round(seq(-0.3, 0.3, by = 0.1), 3),
+                           limits = c(-0.3, 0.3)) +
+        scale_y_continuous(breaks = seq(-5, 11, by = 2)) +
+        theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 8,
                                          colour = "black"),
               plot.title = element_text(hjust = 0.5, face = "bold"),
               plot.subtitle = element_text(hjust = 0.5, face = "bold"),
-              panel.background = element_rect(colour = "#30270d", size = 0.5,
-                                              fill = "#f7f7e4",
-                                              linetype = "solid"),
               panel.grid.major = element_line(size = 0.08, linetype = 'dashed',
                                               colour = "#c18700"), 
               panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
                                               colour = "#c18700"))
-
 plot(p4)
 ```
 
@@ -407,14 +420,11 @@ jog tarp atliktų testų gali būti labai daug ***false positive*** reikšmių.
 
 ***False positive** - tai yra reikšmė, kuri laikoma reikšminga, kai iš tiesų ji
 tokia nėra (nėra reikšminga).*
-
 Kitaip tariant, *p* reikšmė nurodo, kokia yra tikimybė atmesti teisingą
 hipotezę.
-
 Šioje praktinės užduoties dalyje buvo atliktos *p* reikšmių korekcijos, kurios
 pritaikytos tam, jog bendra klaidos tikimybė, kartojant testą daug kartų, būtų
 mažesnė arba lygi dažniausiai naudojamai *p* reikšmei *(0.05).*
-
 Žemiau pateiktoje lentelėje nurodomi reikšmingų pozicijų skaičiai, neatlikus *p*
 verčių korekcijos bei pritaikius ***FDR*** ir ***Bonferroni*** korekcijas:
 
@@ -449,13 +459,6 @@ print(positions)
 Lentelės duomenys rodo, kad atliekant daugkartinį testavimą, daugiausiai
 reikšmingų pozicijų nustatoma, *p* vertėms atlikus ***FDR*** korekciją.
 
--   *P* reikšmės, kurioms netaikyta korekcija, interpretuojamos taip:\
-    *5% **VISŲ** testų duos **false positive** rezultatą*. \# TRUPUTĮ
-    PAKOREGUOTI!
-
--   *P* vertės, kurioms pritaikyta ***FDR*** korekcija, interpretuojamos taip:\
-    *5% **REIKŠMINGŲ** testų duos **false positive** rezultatą*.
-
 \pagebreak
 
 ## 3. Gene Ontology Enrichment analizė
@@ -477,8 +480,6 @@ fgenes <- c(unique(selected_pos$UCSC_RefGene_Name)) %>%
 # Handling lines with gene name repetitions:
 modify_lines <- function(x) {
       if (grepl(";", x) == TRUE) {
-        #smatch <- str_match(x, pattern = regex("([a-zA-Z0-9]*);", ignore_case = T))
-        #smatch[1, 1] %>% substr(., 1, nchar(.) - 1)
         strsplit(x, ";")
       } else { x }
 }
@@ -609,14 +610,381 @@ išsikišimų) sudėtį.
 
 # **4. Grupių analizė, kontroliuojant pašalinius efektus**
 
-```{r T_test_effect_size_side_effects, message=FALSE, warning=FALSE, include=FALSE}
-# 4. Visus aukščiau aprašytus žingsnius pakartokite ieškodami pozicijų susijusių su amžiumi.
+Ketvirtoje užudoties dalyje statistinis hipotezių testavimas buvo atliktas, 
+naudojant tiesinius modelius, kontroliuojant pašalinius efektus:
+
+- Nuliniame modelyje kaip pašaliniai efektai buvo pasirinkti aspirino vartojimas 
+ir polipų buvimas.
+- Pirmajame modelyje pašaliniais efektais buvo amžius, aspirino vartojimas ir
+polipų buvimas.
+
+***(P vertės)*** buvo gautos iš antrojo tiesinio modelio amžiaus koeficiento. 
+***Efekto dydis*** buvo gautas, naudojant dispersinę analizę, analizuojant 
+vidurkių skirtumą tarp nulinio ir pirmojo modelio.
+
+```{r Anova_test, warning=FALSE, include=FALSE}
+#pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
+#effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
 
 # Using linear models to create two models to control "outsider" effects.
-mod0 <- lm(age ~ aspirin + clonic_location, data = samples)
-mod1 <- lm(age ~ aspirin + clonic_location + polyp, data = samples)
+# Using linear model "mod1" age coefficient to get effect_size and Anova table
+# from mod0 and mod1 to get pvalue:
+for (row in 1:nrow(beta)) {
+  mod0 <- lm(beta[row, ] ~ aspirin + polyp, data = samples.clean)
+  mod1 <- lm(beta[row, ] ~ age + aspirin + polyp, data = samples.clean)
+  res  <- anova(mod0, mod1)
+  
+  rowname <- rownames(beta)[row]
+  effect_sizes[row,] <- c(rowname, coefficients(mod1)[2])
+  pvalues[row,] <- c(rowname, res[2,6])
+}
 
-res <- anova(mod0, mod1)
+colnames(pvalues) <- c("Position", "P-value")
+colnames(effect_sizes) <- c("Position", "Effect size")
+
+effect_sizes <- as.data.frame(effect_sizes)
+pvalues <- as.data.frame(pvalues)
+
+#saveRDS(effect_sizes, file = 'lm_effect_sizes.rds')
+#saveRDS(pvalues, file = "lm_p_values.rds")
+
+effect_sizes <- readRDS("lm_effect_sizes.rds")
+pvalues <- readRDS("lm_p_values.rds")
 ```
 
-# Papildomos užduotys
+Žemiau pateikiamoje histogramoje yra vaizduojamas gautų *p* verčių
+pasiskirstymas ieškant pozicijų susijusių su amžiumi ir kontroliuojant
+papildomus pašalinius efektus. Šiuo atveju buvo pasirinkti kontroliuojami
+pašaliniai efektai buvo aspirino vartojimas ir polipų buvimas.
+
+Kaip ir prieš tai buvusioje *p* verčių paskirstymo histogramoje buvo gautas
+ganėtinai didelis skaičius *p* verčių, kuriuos yra mažesnės už 0.05.
+
+```{r lm_P_value_histogram, echo=FALSE, fig.align="center", fig.height=3, fig.width=5, warning=FALSE}
+values <- as.numeric(pvalues[, 2])
+p_df <- data.frame(positions = c(pvalues$Position), pvals = values)
+
+p1 <- ggplot(p_df, aes(x = pvals)) + 
+        geom_histogram(binwidth = 0.025, color = "#00004d", fill = "#2f4581") +
+        geom_vline(xintercept = 0.05, color = "red", size = 0.7,
+                   linetype = "longdash") +
+        labs(x = "P value", y = "Count",
+             title = "P-value distribution histogram") +
+        scale_x_continuous(breaks = seq(0, 1, by = 0.05)) +
+        annotate("text", x = 0.2, y = 400, label = stringr::str_wrap("Line
+                 indicating 0.05 p value break", width = 20), size = 3,
+                 color = "red", fontface = 4) +
+        theme(axis.text.x = element_text(angle = 45, vjust = 0.5,
+                                         colour = "black"),
+              plot.title = element_text(hjust = 0.5, face = "bold"),
+              panel.background = element_rect(colour = "#05076a", size = 0.5,
+                                              fill = "#eaeafd",
+                                              linetype = "solid"),
+              panel.grid.major = element_line(size = 0.05, linetype = 'dashed',
+                                              colour = "#05076a"), 
+              panel.grid.minor = element_line(size = 0.05, linetype = 'dashed',
+                                              colour = "#05076a"))
+print(p1)
+```
+
+### Patikimiausių pozicijų DNR modifikacijos profilis
+
+Žemiau esančiuose grafikuose yra vaizduojami modifikacijos įverčiai *5*
+pozicijų, turinčių žemiausias *p* vertes. Kiekviename atskirame grafike yra
+vaizduojami aspirino nevartojančių ir aspiriną vartojančių moterų modifikacijos
+įverčiai atrinktose pozicijose.
+
+Grafikuose galime pastebėti, kad atliekant grupių analizę, kontroliuojant
+pašalinius efektus, yra gautos kitos *5* pozicijos, turinčios žemiausias *p*
+vertes nei prieš tai atliktoje *patikimiausių pozicijų DNR modifikacijos
+profilio* analizėje.
+
+Grafikuose galima pastebėti, kad pirmosios pozicijos ***(cg04922606)*** aspirino
+nevartojančių moterų grupėje esama mažesnių modifikacijos įverčių. Taip pat
+galime pastebėti, kad moterų grupėje vartojančių aspiriną mažų iverčių yra
+mažiau.
+
+Antroje, ketvirtoje ir penktoje pozicijose matome, kad tiek aspiriną
+vartojančių, tiek nevartojančių modifikacijos įverčiai yra vienodi ir yra ties 0.
+
+Trečioje pozicijoje ***(cg02934525)*** įverčiai yra gan panašūs tiek vartojančių
+aspiriną, tiek aspirino nevartojančių moterų grupėse.
+
+```{r lm_Min_p_value_visualization, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
+# Ordering a p-value dataframe and extracting 5 rows with the lowest p-value:
+#min_Ps <- p_df[order(p_df$pvals),][1:5,]
+
+# Determining position names that have the lowest p-values:
+position_names <- p_df[order(p_df$pvals), ][1:5, ]$positions
+nonuser_len <- length(colnames(beta_nonusers))
+user_len <- length(colnames(beta_users))
+
+# Creating dataframes with modification values of 5 positions (cg04922606,
+# cg16061381, cg02934525, cg05900931, cg01861284):
+anon_users <- beta_nonusers[position_names, ] %>%
+                `colnames<-`(c(rep("Aspirin nonusers", nonuser_len))) %>%
+                melt()
+a_users <- beta_users[position_names, ] %>%
+              `colnames<-`(c(rep("Aspirin users", user_len))) %>%
+              melt()
+
+# Combining two dataframes (of aspirin non-users and aspirin users) into one:
+group_modifications <- rbind(anon_users, a_users) %>%
+                          setNames(., c("Position", "User_nonuser",
+                                   "Modification_value"))
+p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
+                                      color = Position)) +
+        geom_point() +
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) + 
+        labs(title = "DNA modification values",
+             subtitle = "5 positions with the lowest p values",
+             x = "Aspirin nonusers and users", y = "Modification value") +
+        facet_grid(. ~ Position) +
+        theme(axis.text.x = element_text(vjust = 0.5, size = 8,
+                                         colour = "black"),
+              plot.title = element_text(hjust = 0.5, face = "bold"),
+              plot.subtitle = element_text(hjust = 0.5, face = "bold"),
+              panel.background = element_rect(colour = "#05076a", size = 0.5,
+                                              fill = "#eaeafd",
+                                              linetype = "solid"),
+              panel.grid.major = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#05076a"), 
+              panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#05076a"),
+              strip.background = element_rect(fill = "#2f4581"),
+              strip.text = element_text(color = "white", face = "bold"),
+              legend.position = "none")
+
+print(p2 + scale_color_brewer(palette = "Set1"))
+```
+
+### *Manhattan* grafikas *8* chromosomos *p* vertėms atvaizduoti
+
+Žemiau yra pateikiamas ***Manhattan*** grafikas, kuriame vaizduojamos
+***aštuntos*** chromosomos *p* vertės konkrečiose genominėse pozicijose. Raudona
+linija atskiria reikšmingas ir nereikšmingas *p* vertes.
+
+Grafike galima pastebėti, kad žemiau raudonos linijos esančios *p* vertės yra
+panašios. Be to, vertės, esančios žemiau raudonos linijos, yra laikomos
+statistiškai nereikšmingomis. Tos grafiko vietos, kuriose kaupiasi daug panašių
+*p* verčių yra vaizduojamos gelsva spalva.
+
+```{r lm_Chromosome_manhattan_plot, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
+p_effects <- data.frame(position = pvalues$Position, P = pvalues$`P-value`,
+                        Effect = effect_sizes$`Effect size`)
+
+# Extracting position names, position numbers and p values of the 8th chromosome:
+chr <- annot_row[annot_row$chr == "chr8", ]$Name
+bps <- annot_row[annot_row$chr == "chr8", ]$pos
+pvals <- p_effects[p_effects$position %in% chr, "P"]
+
+# Forming a dataframe that will be used for Manhattan plot:
+chr_p_effects <- data.frame(CHR = rep(8, length(chr)), BP = as.numeric(bps),
+                            P = -log10(as.numeric(pvals)))
+
+# Selecting 10 highest p values (after calculating -log10(P) logarithm):
+ordered <- chr_p_effects[order(-chr_p_effects[, "P"]), , drop = FALSE]$P
+select_ordered <- ordered[1:10]
+df_ordered <- chr_p_effects[chr_p_effects$P %in% select_ordered, ]
+
+p3 <- ggplot(chr_p_effects, aes(x = BP, y = P)) +
+        geom_count(col = "#35002c", show.legend = F, size = 0.8) +
+        geom_point(alpha = 0.01, size = 0.9, color = "#fff122") +
+        geom_point(data = df_ordered, color = "#f34a4a", shape = 4, size = 3,
+                   fill = "#e6e600") +
+        geom_text_repel(data = df_ordered,
+                        aes(x = BP, y = P, label = paste0("P: ", round(P, 3))),
+                        color = "red", size = 2, fontface = 3) +
+        geom_hline(yintercept = -log10(0.05), color = "#f34a4a",
+                   linetype = "solid", size = 0.5) +
+        labs(title = "8th chromosome P value Manhattan plot", x = "Position",
+             y = "-log10(P)", size = 3) +
+        ylim(c(0, 10)) +
+        theme(axis.text.x = element_text(vjust = 0.5, size = 6, colour = "black"),
+              axis.text.y = element_text(vjust = 0.5, size = 6, colour = "black"),
+              plot.title = element_text(hjust = 0.5, face = "bold"),
+              plot.subtitle = element_text(hjust = 0.5, face = "bold"),
+              panel.background = element_rect(colour = "#2f0e2e", size = 0.5,
+                                              fill = "#ffe9ff",
+                                              linetype = "solid"),
+              panel.grid.major = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#2f0e2e"), 
+              panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#2f0e2e"))
+print(p3)
+```
+
+### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms atvaizduoti
+
+REIKIA APRAŠYMO...
+
+```{r Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
+df <- data.frame(P = as.numeric(p_effects$P),
+                 Effect_size = as.numeric(p_effects$Effect))
+
+df <- df %>%
+  mutate(significance = case_when(Effect_size > 0 & P <= 0.05 ~ "up",
+                                  Effect_size <= 0.5 & P <= 0.05 ~ "down",
+                                  TRUE ~ "ns"))   
+ 
+cols <- c("up" = "#ffdc81", "down" = "#7e0a23", "ns" = "grey") 
+sizes <- c("up" = 0.2, "down" = 0.2, "ns" = 0.1) 
+alphas <- c("up" = 1, "down" = 1, "ns" = 0.5)
+
+p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
+             alpha = significance)) + 
+        geom_point(shape = 21, color = 'transparent', alpha = 0.7) + 
+        geom_hline(yintercept = -log10(0.05), linetype = "dashed", size = 0.7,
+                   color = "red") + 
+        geom_vline(xintercept = c(log2(0.5), log2(2)), linetype = "dashed") +
+        annotate("text", x = 0.4, y = 3, label = stringr::str_wrap("Line
+                 indicating where values lose significance", width = 20),
+                 size = 3, color = "red", fontface = 4) +
+        scale_fill_manual(values = cols) +
+        scale_size_manual(values = sizes) +
+        scale_alpha_manual(values = alphas) +
+        labs(title = "P and effect size values of all chromosomes",
+             x = "Effect size", y = "-log10(P)") +
+        scale_x_continuous(breaks = c(seq(-0.05, 0, 0.05)),
+                           limits = c(-0.05, 0.05)) +
+        theme(axis.text.x = element_text(vjust = 0.5, size = 8,
+                                         colour = "black"),
+              plot.title = element_text(hjust = 0.5, face = "bold"),
+              panel.background = element_rect(colour = "#05076a", size = 0.5,
+                                              fill = "#eaeafd",
+                                              linetype = "solid"),              
+              plot.subtitle = element_text(hjust = 0.5, face = "bold"),
+              panel.grid.major = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#c18700"), 
+              panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
+                                              colour = "#c18700"))
+plot(p4)
+```
+
+## 4.2. Daugkartinio testavimo *p* verčių korekcija, kontroliuojant pašalinius
+## efektus.
+
+Žemiau pateiktoje lentelėje nurodomi reikšmingų pozicijų skaičiai, neatlikus *p*
+verčių korekcijos bei pritaikius ***FDR*** ir ***Bonferroni*** korekcijas:
+
+```{r}
+fdr <- p.adjust(pvalues$`P-value`, method = "fdr",
+                n = length(pvalues$`P-value`))
+bf <- p.adjust(pvalues$`P-value`, method = "bonferroni",
+               n = length(pvalues$`P-value`))
+p_corr <- data.frame(Position = pvalues$Position,
+                     No_correction = pvalues$`P-value`,
+                     FDR = fdr, Bonferroni = bf)
+
+positions <- data.table(correction = c("No correction","FDR","Bonferroni"),
+   position_count = c(length(rownames(p_corr[p_corr$No_correction <= 0.05, ])),
+                   length(rownames(p_corr[p_corr$FDR <= 0.05, ])),
+                   length(rownames(p_corr[p_corr$Bonferroni <= 0.05, ])))) %>%
+   as_huxtable() %>%
+   set_bold(1, everywhere, TRUE) %>%
+   set_all_borders(1) %>%
+   map_text_color(everywhere, "position_count",
+                  by_colorspace("navy", "red", "darkgreen")) %>%
+   map_italic(everywhere, "correction", by_regex("Merc.*" = TRUE)) %>%
+   set_bold(1, everywhere, TRUE) %>%
+   set_background_color(1:1, everywhere , "lightgreen") %>%
+  set_align(1,1, "center")
+
+align(positions) <- "center"
+print(positions)
+```
+
+## 4.3. Gene Ontology Enrichment analizė
+
+Atlikus *p* verčių korekciją ir įvertinus, kurios DNR pozicijos turi
+statistiškai patikimus modifikacijos įverčių vidurkius, galima analizuoti
+atrinktas DNR pozicijas, pasinaudojus specialiu ***GOrilla*** įrankiu, kuris
+padeda daryti įvairias išvadas apie konkrečiose genominėse pozicijose esančius
+genus.
+
+```{r lm_GO_analysis_selected_genes_by_p, message=FALSE, warning=FALSE, include=FALSE}
+# Extracting 'UCSC_RefGene_Name' column values of positions that have a p value
+# which is lower or equal to 0.05 after performing FDR correction:
+selected_pos <- p_corr[p_corr$FDR <= 0.05, 1] %>% 
+                  annot_row[.,]
+fgenes <- c(unique(selected_pos$UCSC_RefGene_Name)) %>%
+               stri_remove_empty(., na_empty = FALSE)
+
+# Handling lines with gene name repetitions:
+modify_lines <- function(x) {
+      if (grepl(";", x) == TRUE) {
+        strsplit(x, ";")
+      } else { x }
+}
+
+# Making a unique "foreground" gene name list:
+flist <- lapply(fgenes, modify_lines)
+fgene_list <- data.table(Genes = unique(unlist(flist)))
+
+write.table(fgene_list, file = "lm_foreground_gene_list.txt", quote = FALSE,
+            col.names = FALSE, row.names = FALSE)
+```
+
+```{r lm_GO_analysis_selected_genes_by_p, message=FALSE, warning=FALSE, include=FALSE}
+# Extracting 'UCSC_RefGene_Name' column values for the entire positions:
+bgenes <- c(unique(annot_row$UCSC_RefGene_Name)) %>%
+               stri_remove_empty(., na_empty = FALSE)
+
+# Making a unique "background" gene name list:
+blist <- lapply(bgenes, modify_lines)
+bgene_list <- data.table(Genes = unique(unlist(blist)))
+
+write.table(bgene_list, file = "lm_background_gene_list.txt", quote = FALSE,
+            col.names = FALSE, row.names = FALSE)
+```
+
+#### Procesai
+
+Žemiau pateikiamoje lentelėje nurodomi 10 procesų, kuriuose dalyvauja atrinkti
+genai:
+
+```{r lm_GO_analysis_Process, echo=FALSE, message=FALSE, warning=FALSE}
+GO_proc <- read.csv("lm_gene_process.csv")
+GO_proc <- GO_proc[order(GO_proc[, "P.value"]), , drop = FALSE] %>%
+              as.data.table() %>%
+              as_huxtable() %>%
+              set_bold(1, everywhere, TRUE) %>%
+              set_all_borders('NA') %>%
+              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_align(1, 1, "center")
+
+align(GO_proc) <- "center"
+print(GO_proc)
+```
+
+#### Funkcijos
+
+```{r lm_GO_analysis_Function, echo=FALSE, message=FALSE, warning=FALSE}
+GO_func <- read.csv("lm_gene_function.csv")
+GO_func <- GO_func[order(GO_func[, "P.value"]), , drop = FALSE] %>%
+              as.data.table() %>%
+              as_huxtable() %>%
+              set_bold(1, everywhere, TRUE) %>%
+              set_all_borders('NA') %>%
+              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_align(1, 1, "center")
+
+align(GO_func) <- "center"
+print(GO_func)
+```
+
+#### Biologiniai komponentai
+
+```{r lm_GO_analysis_Component, echo=FALSE, message=FALSE, warning=FALSE}
+GO_comp <- read.csv("lm_gene_component.csv")
+GO_comp <- GO_comp[order(GO_comp[, "P_value"]), , drop = FALSE] %>%
+              as.data.table() %>%
+              as_huxtable() %>%
+              set_bold(1, everywhere, TRUE) %>%
+              set_all_borders('NA') %>%
+              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_align(1, 1, "center")
+
+align(GO_comp) <- "center"
+print(GO_comp)
+```
