@@ -825,8 +825,7 @@ print(p3)
 
 ### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms
 
-REIKIA APRAŠYMO...
-
+Žemiau pateiktame pateiktame *Volcano* grafike 
 ```{r lm_Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
 df <- data.frame(P = as.numeric(p_effects$P),
                  Effect_size = as.numeric(p_effects$Effect))
@@ -841,7 +840,7 @@ alphas <- c("up" = 1, "down" = 1, "ns" = 0.5)
 
 p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
              alpha = significance)) + 
-        geom_point(shape = 21,color='transparent',  alpha = 0.7) + 
+        geom_point(shape = 21,color='transparent',  alpha = 0.8) + 
         geom_hline(yintercept = -log10(0.05), linetype = "dashed", size = 0.7,
                    color = "red") + 
         geom_vline(xintercept = c(log2(0.5), log2(2)), linetype = "dashed") +
