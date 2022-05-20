@@ -1,11 +1,11 @@
-Description,P-value,FDR q-value,"Enrichment (N, B)  "
-cellular component organization or biogenesis,5.94E-76,9.22E-72,"1.06 (19583,5268)"
-cellular component organization,7.75E-75,6.01E-71,"1.06 (19583,5221)"
-cellular macromolecule metabolic process,5.36E-61,2.77E-57,"1.06 (19583,4614)"
-localization,3.14E-50,1.22E-46,"1.05 (19583,4772)"
-organonitrogen compound metabolic process,1.13E-49,3.49E-46,"1.05 (19583,5154)"
-cellular localization,6.96E-45,1.8E-41,"1.07 (19583,2222)"
-regulation of nucleobase-containing compound metabolic process,5.61E-44,1.24E-40,"1.06 (19583,4060)"
-metabolic process,3.81E-42,7.39E-39,"1.03 (19583,8397)"
-regulation of cellular metabolic process,6.81E-41,1.17E-37,"1.04 (19583,6248)"
-cellular metabolic process,1.01E-40,1.56E-37,"1.04 (19583,7757)"
+Process,P_value,Enrichment (N, B)  
+cellular component organization or biogenesis,5.94E-76,1.06 (19583,5268)
+cellular component organization,7.75E-75,1.06 (19583,5221)
+cellular macromolecule metabolic process,5.36E-61,1.06 (19583,4614)
+localization,3.14E-50,1.05 (19583,4772)
+organonitrogen compound metabolic process,1.13E-49,1.05 (19583,5154)
+cellular localization,6.96E-45,1.07 (19583,2222)
+regulation of nucleobase-containing compound metabolic process,5.61E-44,1.06 (19583,4060)
+metabolic process,3.81E-42,1.03 (19583,8397)
+regulation of cellular metabolic process,6.81E-41,1.04 (19583,6248)
+cellular metabolic process,1.01E-40,1.04 (19583,7757)

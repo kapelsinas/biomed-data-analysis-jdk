@@ -991,7 +991,7 @@ print(GO_func)
 
 ```{r lm_GO_analysis_Component, echo=FALSE, message=FALSE, warning=FALSE}
 GO_comp <- read.csv("GOrilla/lm_gene_component.csv")
-GO_comp <- GO_comp[order(GO_comp[, "P.value"]), , drop = FALSE] %>%
+GO_comp <- GO_comp[order(GO_comp[, "P_value"]), , drop = FALSE] %>%
               as.data.table() %>%
               as_huxtable() %>%
               set_bold(1, everywhere, TRUE) %>%
