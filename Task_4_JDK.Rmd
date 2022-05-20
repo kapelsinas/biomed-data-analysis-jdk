@@ -23,9 +23,9 @@ p_load(dplyr, ggplot2, reshape2, reshape, data.table, stringi, stringr,
 ```
 
 ```{r Data_access, message=FALSE, warning=FALSE, include=FALSE}
-beta <- readRDS("data/dat8.Rds")               # Modification value matrix
-pData_col <- readRDS("data/pData.Rds")         # Sample (column) matrix
-annot_row <- readRDS("data/annotation.Rds")    # Position (row) matrix
+beta <- readRDS("dat8.Rds")               # Modification value matrix
+pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
+annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
 
 
