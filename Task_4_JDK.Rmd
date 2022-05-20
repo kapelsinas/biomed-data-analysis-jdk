@@ -23,9 +23,9 @@ p_load(dplyr, ggplot2, reshape2, reshape, data.table, stringi, stringr,
 ```
 
 ```{r Data_access, message=FALSE, warning=FALSE, include=FALSE}
-beta <- readRDS("dat8.Rds")               # Modification value matrix
-pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
-annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
+beta <- readRDS("data/dat8.Rds")               # Modification value matrix
+pData_col <- readRDS("data/pData.Rds")         # Sample (column) matrix
+annot_row <- readRDS("data/annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
 
 
@@ -621,7 +621,6 @@ išsikišimų) sudėtį.
 #pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
 #effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
 
-print (Sys.time())
 for (row in 1:nrow(beta)) {
   mod0 <- lm(beta[row, ] ~ aspirin + polyp, data= samples.clean)
   mod1 <- lm(beta[row, ] ~ age + aspirin + polyp, data= samples.clean)
@@ -630,13 +629,6 @@ for (row in 1:nrow(beta)) {
   rowname <- rownames(beta)[row]
   effect_sizes[row,] <- c(rowname, coefficients(mod1)[2])
   pvalues[row,] <- c(rowname, res[2,6])
-  
-   if (row %% 1000 == 0) {
-     print(row)
-     print( Sys.time())
-   }
-  
-  
 }
 
 colnames(pvalues) <- c("Position", "P-value")
