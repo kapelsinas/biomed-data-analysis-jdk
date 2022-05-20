@@ -478,8 +478,8 @@ LeastAcc <- colnames(Acc)[max.col(Acc, ties.method = "first")]
 Parodoma, kuris iš trijų naudojamų laikrodžių yra tiksliausias ir kuris
 yra mažiausiai tikslus. Naudododami *DNAmAge* funkciją pamatome, kad
 tiksliausias yra ***Horvarth laikrodis***, kurio nuklydimo vidurkis yra
-***`r Acc$Horvarth`***, o mažiausiai tikslus yra ***Levine laikrodis***,
-kurio vidurkis yra lygus ***`r Acc$Levine`***.
+***`r MostAcc`***, o mažiausiai tikslus yra ***Levine laikrodis***,
+kurio vidurkis yra lygus ***`r LeastAcc`***.
 
 Žemiau yra vaizduojama koreliacija tarp visų trijų laikrodžių.
 

@@ -52,4 +52,3 @@ output.rds
 a.R
 3_task.R
 dataframe.csv
-*.Rds
