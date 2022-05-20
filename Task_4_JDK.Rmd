@@ -1023,6 +1023,6 @@ genų yra iš lastelės sandaros dalių, tokių kaip membrana, nucleoplazmą.
 
 Apibendrinant lentesė pateiktus duomenis kontroliuojant pašalinius efektus, 
 galima padaryti išvadą, kad didžioji dalis genų dalyvauja **anatomijos**,
-**organu formavime** ir **lastelės sandaros dalių**.
+**organų** ir **lastelės sandaros dalių** formavime.
 
 # Papildomos užduotys
