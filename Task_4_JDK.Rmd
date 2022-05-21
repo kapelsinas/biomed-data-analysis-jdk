@@ -1091,6 +1091,10 @@ align(GO_proc) <- "center"
 print(GO_proc)
 ```
 
+Lentelėje pateikti duomenys rodo, kad atrinktuose genuose kaip ir prieš tai
+atliktoje procesų analizėje didžioji dalis genų dalyvauja **anatomijos** ir 
+**organų formavimosi** procesuose.
+
 #### Funkcijos
 
 Žemiau pateikiamoje lentelėje nurodomi 10 funkcijų, kurias atlieka pasirinkti 
@@ -1109,6 +1113,11 @@ GO_func <- GO_func[order(GO_func[, "P_value"]), , drop = FALSE] %>%
 align(GO_func) <- "center"
 print(GO_func)
 ```
+
+Remiantis lentelėje pateikta informacija apie funkcijas, kurias atlieka genai.
+Galime pamatyti kad didžioji dalis genų atlieka prisijungimo funkciją. Taip pat
+matome, kad labai stipriai išsiskyria genai, kurie atlieka baltymų prisijungimo
+funkcija.
 
 #### Biologiniai komponentai
 
