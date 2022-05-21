@@ -2,18 +2,20 @@
 title: "Praktinė užduotis Nr. 3"
 author: "Jaroslav Rutkovskij, Danielė Stasiūnaitė, Karolis Augustauskas (JDK)"
 date: "`r format(Sys.time(), '%d/%m/%y')`"
-output:
-  pdf_document: default
-  html_document:
-    df_print: paged
+output: 
+  pdf_document: 
+    latex_engine: lualatex
 subtitle: Hipotezių testavimas
 editor_options: 
   markdown: 
     wrap: 80
+header-includes: |
+  \usepackage{calc}
+  \usepackage{float}
 ---
 
 ```{r Figure_size, message=FALSE, warning=FALSE, include=FALSE}
-knitr::opts_chunk$set(fig.height = 13, fig.width = 16)
+knitr::opts_chunk$set(fig.height = 13, fig.width = 16, fig.pos = 'H')
 ```
 
 ```{r Preparations, message=FALSE, warning=FALSE, include=FALSE}
@@ -72,7 +74,7 @@ vartojančių moterų) prieš atliekant antrąją praktinę užduotį, kai buvo 
 *124* mėginiai, bei diagramos stulpeliai, kuriuose vaizduojami mėginių kiekiai
 grupėse po mėginių pašalinimo (likus *96* mėginiams):
 
-```{r Aspirin_user/nonuser_selection, fig.align="center", fig.height=3, fig.width=4, message=FALSE, warning=FALSE, include=FALSE}
+```{r Aspirin_user/nonuser_selection, fig.align="center", fig.height=3, fig.width=4, message=FALSE, warning=FALSE, echo=FALSE}
 # Extracting data frame rows that describe aspirin non-users:
 aspirin_nonusers <- samples[samples$aspirin == 'nonuser', ]$graph_name
 
@@ -112,7 +114,7 @@ p0 <- ggplot(group_counts, aes(x = aspirin, y = count)) +
                                               colour = "#66001a"), 
               panel.grid.minor = element_line(size = 0.1, linetype = 'dashed',
                                               colour = "#66001a"))
-print(p0)
+p0
 ```
 
 Suskirsčius mėginius į grupes buvo tikrinama, kaip skiriasi visų DNR pozicijų
@@ -136,32 +138,32 @@ effect_sizes <- matrix(NA, nrow = nrow(beta), ncol = 2)
 
 # Running a loop that performs t-test, effect size calculations and appends
 # p-values, effect size values into matrixes:
-#sprintf("Start time: %s", format(Sys.time(), "%D %H:%M:%S"))
+sprintf("Start time: %s", format(Sys.time(), "%D %H:%M:%S"))
 
-#for (row in 1:nrows(beta)) {
-#  vec1 <- c(beta_nonusers[row, ])
-#  vec2 <- c(beta_users[row, ])
-#  rowname <- rownames(beta_nonusers)[row]
-  
-#  row_pvalue <- c(rowname, t.test(vec1, vec2)$p.value)
-#  effect_size <- c(rowname, (mean(vec1) - mean(vec2)))
-#  effect_sizes[row, ] <- effect_size
-#  pvalues[row, ] <- row_pvalue
-#}
+for (row in 1:nrow(beta)) {
+ vec1 <- c(beta_nonusers[row, ])
+ vec2 <- c(beta_users[row, ])
+ rowname <- rownames(beta_nonusers)[row]
 
-#sprintf("End time: %s", format(Sys.time(), "%D %H:%M:%S"))
+ row_pvalue <- c(rowname, t.test(vec1, vec2)$p.value)
+ effect_size <- c(rowname, (mean(vec1) - mean(vec2)))
+ effect_sizes[row, ] <- effect_size
+ pvalues[row, ] <- row_pvalue
+}
 
-#colnames(pvalues) <- c("Position", "Pvalue")
-#colnames(effect_sizes) <- c("Position", "Effect_size")
+sprintf("End time: %s", format(Sys.time(), "%D %H:%M:%S"))
 
-#effect_sizes <- as.data.frame(effect_sizes)
-#pvalues <- as.data.frame(pvalues)
+colnames(pvalues) <- c("Position", "Pvalue")
+colnames(effect_sizes) <- c("Position", "Effect_size")
+
+effect_sizes <- as.data.frame(effect_sizes)
+pvalues <- as.data.frame(pvalues)
 
 # saveRDS(effect_sizes, file='effect_sizes.rds')
 # saveRDS(pvalues, file="p_values.rds")
 
-pvalues <- readRDS("p_values.rds")
-effect_sizes <- readRDS("effect_sizes.rds")
+# pvalues <- readRDS("p_values.rds")
+# effect_sizes <- readRDS("effect_sizes.rds")
 p_effects <- data.frame(position = pvalues$Position, P = pvalues$Pvalue,
                         Effect = effect_sizes$Effect_size)
 ```
@@ -178,7 +180,7 @@ buvo mažesnės už *0.05*. Reikšmių, kurios būtų didesnės už 0.05, buvo n
 mažiau. Taip pat iš histogramos matoma, kad didėjančių *p* verčių skaičius
 gradualiai mažėjo:
 
-```{r P_value_histogram, echo=FALSE, fig.align="center", fig.height=3, fig.width=5, message=FALSE, warning=FALSE}
+```{r P_value_histogram, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", fig.height=3, fig.width=5}
 values <- as.numeric(pvalues$Pvalue)
 p_df <- data.frame(positions = c(pvalues$Position), pvals = values)
 
@@ -202,7 +204,7 @@ p1 <- ggplot(p_df, aes(x = pvals)) +
                                               colour = "#05076a"), 
               panel.grid.minor = element_line(size = 0.05, linetype = 'dashed',
                                               colour = "#05076a"))
-print(p1)
+p1
 ```
 
 ### Patikimiausių pozicijų DNR modifikacijos profilis
@@ -233,7 +235,7 @@ grupių yra panašus, tačiau paskutinėje nagrinėjamoje pozicijoje
 nuo *\~0.6* iki *\~0.65* nebuvimas. Šiame intervale esančios modifikacijos
 reikšmės aspirino nevartojančių moterų grupėje yra nustatomos.
 
-```{r Min_p_value_visualization, echo=FALSE, fig.align="center", fig.height=3, fig.width=5, message=FALSE, warning=FALSE}
+```{r Min_p_value_visualization, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE}
 # Ordering a p-value dataframe and extracting 5 rows with the lowest p-value:
 #min_Ps <- p_df[order(p_df$pvals),][1:5,]
 
@@ -279,7 +281,7 @@ p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
               strip.text = element_text(color = "white", face = "bold"),
               legend.position = "none")
 
-print(p2 + scale_color_brewer(palette = "Set1"))
+p2 + scale_color_brewer(palette = "Set1")
 ```
 
 ### *Manhattan* grafikas *8* chromosomos *p* vertėms atvaizduoti
@@ -293,7 +295,7 @@ panašios. Be to, vertės, esančios žemiau raudonos linijos, yra laikomos
 statistiškai nereikšmingomis. Tos grafiko vietos, kuriose kaupiasi daug panašių
 *p* verčių yra vaizduojamos gelsva spalva.
 
-```{r Chromosome_manhattan_plot, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
+```{r Chromosome_manhattan_plot, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE}
 # Extracting position names, position numbers and p values of the 8th chr:
 chr <- annot_row[annot_row$chr == "chr8", ]$Name
 bps <- annot_row[annot_row$chr == "chr8", ]$pos
@@ -332,7 +334,7 @@ p3 <- ggplot(chr_p_effects, aes(x = BP, y = P)) +
                                               colour = "#2f0e2e"), 
               panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
                                               colour = "#2f0e2e"))
-print(p3)
+p3
 ```
 
 Taip pat grafike yra pažymėta 10 taškų, kurių mažiausios *p* vertės po
@@ -365,7 +367,7 @@ reikšmes. Tai reiškia, jog atsižvelgus į efekto dydžius ir logaritmuotas *p
 vertes, oranžine spalva pažymėti taškai yra reikšmingi ir gali būti panaudoti
 tolimesnėms analizėms.
 
-```{r Chromosome_volcano_plot, fig.align="center", fig.height=3, fig.width=4, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Chromosome_volcano_plot, fig.align="center", echo=FALSE, message=FALSE, warning=FALSE}
 # Forming a dataframe that will be used for making a Volcano plot:
 df <- data.frame(P = as.numeric(p_effects$P),
                  Effect_size = as.numeric(p_effects$Effect))
@@ -394,7 +396,7 @@ p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
         scale_fill_manual(values = cols) +
         scale_size_manual(values = sizes) +
         scale_alpha_manual(values = alphas) +
-        labs(title = "P and effect size values of all chromosomes",
+        labs(title = stringr::str_wrap("P and effect size values of all chromosomes", width = 40),
              x = "Effect size", y = "-log10(P)") +
         scale_x_continuous(breaks = round(seq(-0.3, 0.3, by = 0.1), 3),
                            limits = c(-0.3, 0.3)) +
@@ -443,7 +445,7 @@ positions <- data.table(correction = c("No correction","FDR","Bonferroni"),
    position_count = c(length(rownames(p_corr[p_corr$No_correction <= 0.05, ])),
                    length(rownames(p_corr[p_corr$FDR <= 0.05, ])),
                    length(rownames(p_corr[p_corr$Bonferroni <= 0.05, ])))) %>%
-   as_huxtable() %>%
+   as_huxtable(autoformat = FALSE) %>%
    set_bold(1, everywhere, TRUE) %>%
    set_all_borders(1) %>%
    map_text_color(everywhere, "position_count",
@@ -454,7 +456,7 @@ positions <- data.table(correction = c("No correction","FDR","Bonferroni"),
    set_align(1,1, "center")
 
 align(positions) <- "center"
-print(positions)
+positions
 ```
 
 Lentelės duomenys rodo, kad atliekant daugkartinį testavimą, daugiausiai
@@ -520,23 +522,22 @@ nagrinėjami pagal tris kategorijas:
 2.  Kokias funkcijas atlieka;\
 3.  Kokiuose biologiniuose komponentuose (ląstelėse ir pan.) aptinkami.
 
-#### Procesai
+#### Procesai\
 
 Žemiau pateikiamoje lentelėje nurodomi 10 procesų, kuriuose dalyvauja atrinkti
 genai:
 
 ```{r GO_analysis_Process, echo=FALSE, message=FALSE, warning=FALSE}
-GO_proc <- read.csv("gene_process.csv")
+GO_proc <- read.csv("GOrilla/gene_process.csv")
 GO_proc <- GO_proc[order(GO_proc[, "P_value"]), , drop = FALSE] %>%
-              as.data.table() %>%
               as_huxtable() %>%
-              set_bold(1, everywhere, TRUE) %>%
-              set_all_borders('NA') %>%
-              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_bold(1, 1:3, TRUE) %>%
+              set_all_borders(1) %>%
+              set_background_color(1:1, 1:3 , "#ffbb5c") %>%
               set_align(1, 1, "center")
 
 align(GO_proc) <- "center"
-print(GO_proc)
+GO_proc
 ```
 
 Lentelėje pateikti duomenys rodo, kad atrinktų genų sąrašuose buvo labai daug
@@ -551,23 +552,22 @@ susijusių su nervinių ląstelių, jų struktūrų formavimusi bei sinapsių su
 Taip pat genų, dalyvaujančių nerviniuose procesuose, skaičius reikšmingas dėl
 patikimai mažų *p* verčių, indikuojančių, kad tokie genai nėra atsitiktiniai.
 
-#### Funkcijos
+#### Funkcijos\
 
 Žemiau pateikiamoje lentelėje išskiriamos 6 funkcijos, kurias atlieka baltymus
 koduojantys atrinkti genai:
 
 ```{r GO_analysis_Function, echo=FALSE, message=FALSE, warning=FALSE}
-GO_func <- read.csv("gene_function.csv")
+GO_func <- read.csv("GOrilla/gene_function.csv")
 GO_func <- GO_func[order(GO_func[, "P_value"]), , drop = FALSE] %>%
-              as.data.table() %>%
               as_huxtable() %>%
-              set_bold(1, everywhere, TRUE) %>%
-              set_all_borders('NA') %>%
-              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_bold(1, 1:3, TRUE) %>%
+              set_all_borders(1) %>%
+              set_background_color(1:1, 1:3 , "#ffbb5c") %>%
               set_align(1, 1, "center")
 
 align(GO_func) <- "center"
-print(GO_func)
+GO_func
 ```
 
 Remiantis lentelėje pateikta informacija, galima pastebėti, kad yra daug genų
@@ -579,23 +579,21 @@ receptorių** funkciją.
 medžiagų pernašos** funkciją pro plazminę membraną (*457* genai iš *19583*
 genų).
 
-#### Biologiniai komponentai
+#### Biologiniai komponentai\
 
-Žemiau pateikiamoje lentelėje išskiriami 6 biologiniai komponentai, kuriuose
-nustatomi atrinktų genų produktai:
+Žemiau pateikiamoje lentelėje išskiriami 6 biologiniai komponentai, kuriuose nustatomi atrinktų genų produktai:
 
 ```{r GO_analysis_Component, echo=FALSE, message=FALSE, warning=FALSE}
-GO_comp <- read.csv("gene_component.csv")
+GO_comp <- read.csv("GOrilla/gene_component.csv")
 GO_comp <- GO_comp[order(GO_comp[, "P_value"]), , drop = FALSE] %>%
-              as.data.table() %>%
               as_huxtable() %>%
-              set_bold(1, everywhere, TRUE) %>%
-              set_all_borders('NA') %>%
-              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_bold(1, 1:3, TRUE) %>%
+              set_all_borders(1) %>%
+              set_background_color(1:1, 1:3 , "#ffbb5c") %>%
               set_align(1, 1, "center")
 
 align(GO_comp) <- "center"
-print(GO_comp)
+GO_comp
 ```
 
 Iš sudarytos lentelės duomenų galima pastebėti, kad yra daug genų, kurių
@@ -624,8 +622,8 @@ naudojant tiesinius modelius, kontroliuojant pašalinius efektus:
 vidurkių skirtumą tarp nulinio ir pirmojo modelio.
 
 ```{r Anova_test, warning=FALSE, include=FALSE}
-#pvalues <- matrix(NA, nrow = nrow(beta), ncol = 2)
-#effect_sizes <- matrix(NA, nrow = nrow(beta), ncol = 2)
+pvalues <- matrix(NA, nrow = nrow(beta), ncol = 2)
+effect_sizes <- matrix(NA, nrow = nrow(beta), ncol = 2)
 
 # Using linear models to create two models to control "outsider" effects.
 # Using linear model "mod1" age coefficient to get effect_size and Anova table
@@ -634,7 +632,7 @@ for (row in 1:nrow(beta)) {
   mod0 <- lm(beta[row, ] ~ aspirin + polyp, data = samples.clean)
   mod1 <- lm(beta[row, ] ~ age + aspirin + polyp, data = samples.clean)
   res  <- anova(mod0, mod1)
-  
+
   rowname <- rownames(beta)[row]
   effect_sizes[row,] <- c(rowname, coefficients(mod1)[2])
   pvalues[row,] <- c(rowname, res[2, 6])
@@ -649,8 +647,8 @@ pvalues <- as.data.frame(pvalues)
 #saveRDS(effect_sizes, file = 'lm_effect_sizes.rds')
 #saveRDS(pvalues, file = "lm_p_values.rds")
 
-effect_sizes <- readRDS("lm_effect_sizes.rds")
-pvalues <- readRDS("lm_p_values.rds")
+# effect_sizes <- readRDS("lm_effect_sizes.rds")
+# pvalues <- readRDS("lm_p_values.rds")
 ```
 
 ### *P* verčių histograma
@@ -674,7 +672,7 @@ p1 <- ggplot(p_df, aes(x = pvals)) +
         labs(x = "P value", y = "Count",
              title = "P-value distribution histogram") +
         scale_x_continuous(breaks = seq(0, 1, by = 0.05)) +
-        annotate("text", x = 0.2, y = 400, label = stringr::str_wrap("Line
+        annotate("text", x = 0.2, y = 50000, label = stringr::str_wrap("Line
                  indicating 0.05 p value break", width = 20), size = 3,
                  color = "red", fontface = 4) +
         theme(axis.text.x = element_text(angle = 45, vjust = 0.5,
@@ -687,7 +685,7 @@ p1 <- ggplot(p_df, aes(x = pvals)) +
                                               colour = "#05076a"), 
               panel.grid.minor = element_line(size = 0.05, linetype = 'dashed',
                                               colour = "#05076a"))
-print(p1)
+p1
 ```
 
 ### Patikimiausių pozicijų DNR modifikacijos profilis
@@ -761,7 +759,7 @@ p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
               strip.text = element_text(color = "white", face = "bold"),
               legend.position = "none")
 
-print(p2 + scale_color_brewer(palette = "Set1"))
+p2 + scale_color_brewer(palette = "Set1")
 ```
 
 ### *Manhattan* grafikas *8* chromosomos *p* vertėms atvaizduoti
@@ -818,31 +816,31 @@ p3 <- ggplot(chr_p_effects, aes(x = BP, y = P)) +
               panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
                                               colour = "#2f0e2e"))
 
-print(p3)
+p3
 ```
 
 ### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms atvaizduoti
 
-Žemiau vaizduojamas *Volcano* grafikas, kuriame parodomos visų chromosomų *p* 
+Žemiau vaizduojamas *Volcano* grafikas, kuriame parodomos visų chromosomų *p*
 vertės ir efekto dydžiai. Žemiau raudonos linijos esančios ir pilka spalva
 pavaizduotos reikšmės yra laikomos statistiškai nereikšmingomis.
 
 Grafike pavaizduoti raudoni ir geltoni taškai. Kaip ir anksčiau analizėje
 pavaizduotame *Volcano* grafike, raudoni taškai nėra laikomi statistiškai
-patikimais. Oranžine spalva pažymėti taškai yra laikomi patikimais ir
-yra tinkami tolimesnėms analizėms.
+patikimais. Oranžine spalva pažymėti taškai yra laikomi patikimais ir yra
+tinkami tolimesnėms analizėms.
 
-Taip pat iš grafiko matoma, kad tarp grupių nėra labai didelio statistinio 
+Taip pat iš grafiko matoma, kad tarp grupių nėra labai didelio statistinio
 skirtumo, kadangi didžioji dalis reikšmių yra išsidėsčiusi ties *0* *x* ašyje.
 
-```{r Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Chromosome_volcano_plot_lm, echo=FALSE, message=FALSE, warning=FALSE}
 df <- data.frame(P = as.numeric(p_effects$P),
                  Effect_size = as.numeric(p_effects$Effect))
 
 df <- df %>%
-  mutate(significance = case_when(Effect_size > 0 & P <= 0.05 ~ "up",
+  mutate(significance = case_when(Effect_size > 0.005 & P <= 0.05 ~ "up",
                                   Effect_size <= 0.5 & P <= 0.05 ~ "down",
-                                  TRUE ~ "ns"))   
+                                  TRUE ~ "ns"))
  
 cols <- c("up" = "#ffdc81", "down" = "#7e0a23", "ns" = "grey") 
 sizes <- c("up" = 0.2, "down" = 0.2, "ns" = 0.1) 
@@ -875,8 +873,10 @@ p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
                                               colour = "#c18700"), 
               panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
                                               colour = "#c18700"))
-plot(p4)
+p4
 ```
+
+\pagebreak
 
 ## 4.2. Daugkartinio testavimo *p* verčių korekcija, kontroliuojant pašalinius efektus
 
@@ -907,7 +907,7 @@ positions <- data.table(correction = c("No correction","FDR","Bonferroni"),
    set_align(1,1, "center")
 
 align(positions) <- "center"
-print(positions)
+positions
 ```
 
 ## 4.3. *Gene Ontology Enrichment* analizė
@@ -954,70 +954,67 @@ write.table(bgene_list, file = "lm_background_gene_list.txt", quote = FALSE,
             col.names = FALSE, row.names = FALSE)
 ```
 
-#### Procesai
+#### Procesai\ 
 
-Žemiau pateikiamoje lentelėje nurodomi 10 procesų, kuriuose dalyvauja atrinkti
-genai:
+Žemiau pateikiamoje lentelėje nurodomi 10 procesų, kuriuose dalyvauja atrinkti genai:
 
 ```{r lm_GO_analysis_Process, echo=FALSE, message=FALSE, warning=FALSE}
-GO_proc <- read.csv("lm_gene_process.csv")
-GO_proc <- GO_proc[order(GO_proc[, "P.value"]), , drop = FALSE] %>%
-              as.data.table() %>%
+GO_proc <- read.csv("GOrilla/lm_gene_process.csv")
+GO_proc <- GO_proc[order(GO_proc[, "P_value"]), , drop = FALSE] %>%
               as_huxtable() %>%
-              set_bold(1, everywhere, TRUE) %>%
-              set_all_borders('NA') %>%
-              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_bold(1, 1:3, TRUE) %>%
+              set_all_borders(1) %>%
+              set_background_color(1:1, 1:3 , "#ffbb5c") %>%
               set_align(1, 1, "center")
 
 align(GO_proc) <- "center"
-print(GO_proc)
+GO_proc
 ```
 
 Lentelėje pateikti duomenys rodo, kad atrinktuose genuose kaip ir prieš tai
 atliktoje procesų analizėje didžioji dalis genų dalyvauja **anatomijos** ir
 **organų formavimosi** procesuose.
 
-#### Funkcijos
+\pagebreak
 
-Žemiau pateikiamoje lentelėje nurodomos 10 funkcijų, kurias atlieka pasirinkti
-genai :
+#### Funkcijos\
+
+Žemiau pateikiamoje lentelėje nurodomos 10 funkcijų, kurias atlieka pasirinkti genai :
 
 ```{r lm_GO_analysis_Function, echo=FALSE, message=FALSE, warning=FALSE}
-GO_func <- read.csv("lm_gene_function.csv")
+GO_func <- read.csv("GOrilla/lm_gene_function.csv")
 GO_func <- GO_func[order(GO_func[, "P_value"]), , drop = FALSE] %>%
-              as.data.table() %>%
               as_huxtable() %>%
-              set_bold(1, everywhere, TRUE) %>%
-              set_all_borders('NA') %>%
-              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_bold(1, 1:3, TRUE) %>%
+              set_all_borders(1) %>%
+              set_background_color(1:1, 1:3 , "#ffbb5c") %>%
               set_align(1, 1, "center")
 
 align(GO_func) <- "center"
-print(GO_func)
+GO_func
 ```
 
 Remiantis lentelėje pateikta informacija apie funkcijas, kurias atlieka genai,
 galime pamatyti, kad didžioji dalis genų atlieka **prisijungimo** funkciją. Taip
-pat matoma, kad labai stipriai išsiskiria genai, kurie atlieka **baltymų
-prisijungimo funkciją**.
+pat matoma, kad labai stipriai išsiskiria genai, kurie atlieka **baltymų prisijungimo funkciją**.
 
-#### Biologiniai komponentai
+\pagebreak
 
-Žemiau pateikiamoje lentelėje nurodomi 10 biologinių komponentų, kuriuose
-nustatomi atrinktų genų produktai:
+#### Biologiniai komponentai\
+
+Žemiau pateikiamoje lentelėje nurodomi 10 biologinių komponentų, kuriuose nustatomi atrinktų genų produktai:
 
 ```{r lm_GO_analysis_Component, echo=FALSE, message=FALSE, warning=FALSE}
-GO_comp <- read.csv("lm_gene_component.csv")
+GO_comp <- read.csv("GOrilla/lm_gene_component.csv")
 GO_comp <- GO_comp[order(GO_comp[, "P_value"]), , drop = FALSE] %>%
-              as.data.table() %>%
               as_huxtable() %>%
-              set_bold(1, everywhere, TRUE) %>%
-              set_all_borders('NA') %>%
-              set_background_color(1:1, everywhere , "#ffbb5c") %>%
+              set_bold(1, 1:3, TRUE) %>%
+              set_all_borders(1) %>%
+              set_background_color(1:1, 1:3 , "#ffbb5c") %>%
               set_align(1, 1, "center")
 
 align(GO_comp) <- "center"
-print(GO_comp)
+GO_comp
 ```
 
 Iš lentelėje išvardintų biologinių komponentų matoma, kad didžioji dalis genų
@@ -1026,5 +1023,4 @@ produktų įeina į ląstelės sandaros dalių, tokių kaip **membrana**,
 
 Apibendrinant lentelėse pateiktus duomenis, kurie buvo gauti nagrinėjant
 pozicijas, kontroliuojant pašalinius efektus, galima padaryti išvadą, kad
-didžioji dalis genų dalyvauja **anatomijos**, **organų** ir **ląstelės sandaros
-dalių** formavime.
+didžioji dalis genų dalyvauja **anatomijos**, **organų** ir **ląstelės sandaros dalių** formavime.
