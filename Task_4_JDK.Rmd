@@ -822,8 +822,16 @@ print(p3)
 ```
 
 ### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms atvaizduoti
+Žemiau vaizduojamas *Volcano* grafika, kuriame parodomos visų chromosomų *p* 
+vertės ir efekto dydžiai. Žemiau raudonos linijos ir pilka spalva reikšmės yra
+laikomos statistiškai nereikšmingomis.
 
-REIKIA APRAŠYMO...
+Grafike pavaizduoti raudoni ir geltoni taškai. Kaip ir prieš tai pavaizduotame 
+*volcano* grafike, raudoni taškai nėra laikomi statistiškai patikimais ir 
+oranžiniai yra laikomi ir yra tinkami tolimesnėms analizėms.
+
+Taip pat iš grafiko matome, kad tarp grupių nera labai didelio statistinio 
+skirtumo, kadangi didžioji dalis reikšmių yra išsidesčiusi ties 0 *x* ašyje.
 
 ```{r Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
 df <- data.frame(P = as.numeric(p_effects$P),
