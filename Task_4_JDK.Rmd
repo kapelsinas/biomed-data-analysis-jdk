@@ -23,9 +23,9 @@ p_load(dplyr, ggplot2, reshape2, reshape, data.table, stringi, stringr,
 ```
 
 ```{r Data_access, message=FALSE, warning=FALSE, include=FALSE}
-beta <- readRDS("dat8.Rds")               # Modification value matrix
-pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
-annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
+beta <- readRDS("data/dat8.Rds")               # Modification value matrix
+pData_col <- readRDS("data/pData.Rds")         # Sample (column) matrix
+annot_row <- readRDS("data/annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
 vec <- colnames(beta)
 samples.clean <-samples[samples$Basename %in% vec, ]
@@ -646,11 +646,14 @@ colnames(effect_sizes) <- c("Position", "Effect size")
 effect_sizes <- as.data.frame(effect_sizes)
 pvalues <- as.data.frame(pvalues)
 
+p_effects <- data.frame(position = pvalues$Position, P = pvalues$`P-value`,
+                        Effect = effect_sizes$`Effect size`)
+
 #saveRDS(effect_sizes, file = 'lm_effect_sizes.rds')
 #saveRDS(pvalues, file = "lm_p_values.rds")
 
-effect_sizes <- readRDS("lm_effect_sizes.rds")
-pvalues <- readRDS("lm_p_values.rds")
+#effect_sizes <- readRDS("lm_effect_sizes.rds")
+#pvalues <- readRDS("lm_p_values.rds")
 ```
 
 ### *P* verčių histograma
@@ -776,8 +779,6 @@ statistiškai nereikšmingomis. Tos grafiko vietos, kuriose kaupiasi daug panaš
 *p* verčių yra vaizduojamos gelsva spalva.
 
 ```{r lm_Chromosome_manhattan_plot, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
-p_effects <- data.frame(position = pvalues$Position, P = pvalues$`P-value`,
-                        Effect = effect_sizes$`Effect size`)
 
 # Extracting position names, position numbers and p values of the 8th chromosome:
 chr <- annot_row[annot_row$chr == "chr8", ]$Name
@@ -822,15 +823,23 @@ print(p3)
 ```
 
 ### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms atvaizduoti
+Žemiau vaizduojamas *Volcano* grafika, kuriame parodomos visų chromosomų *p* 
+vertės ir efekto dydžiai. Žemiau raudonos linijos ir pilka spalva reikšmės yra
+laikomos statistiškai nereikšmingomis.
 
-REIKIA APRAŠYMO...
+Grafike pavaizduoti raudoni ir geltoni taškai. Kaip ir prieš tai pavaizduotame 
+*volcano* grafike, raudoni taškai nėra laikomi statistiškai patikimais ir 
+oranžiniai yra laikomi ir yra tinkami tolimesnėms analizėms.
+
+Taip pat iš grafiko matome, kad tarp grupių nera labai didelio statistinio 
+skirtumo, kadangi didžioji dalis reikšmių yra išsidesčiusi ties 0 *x* ašyje.
 
 ```{r Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
 df <- data.frame(P = as.numeric(p_effects$P),
                  Effect_size = as.numeric(p_effects$Effect))
 
 df <- df %>%
-  mutate(significance = case_when(Effect_size > 0 & P <= 0.05 ~ "up",
+  mutate(significance = case_when(Effect_size > 0.005 & P <= 0.05 ~ "up",
                                   Effect_size <= 0.5 & P <= 0.05 ~ "down",
                                   TRUE ~ "ns"))   
  
@@ -852,8 +861,8 @@ p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
         scale_alpha_manual(values = alphas) +
         labs(title = "P and effect size values of all chromosomes",
              x = "Effect size", y = "-log10(P)") +
-        scale_x_continuous(breaks = c(seq(-0.05, 0, 0.05)),
-                           limits = c(-0.05, 0.05)) +
+        scale_x_continuous(breaks = c(seq(-0.02, 0, 0.02)),
+                           limits = c(-0.02, 0.02)) +
         theme(axis.text.x = element_text(vjust = 0.5, size = 8,
                                          colour = "black"),
               plot.title = element_text(hjust = 0.5, face = "bold"),
