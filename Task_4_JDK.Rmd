@@ -27,9 +27,6 @@ beta <- readRDS("dat8.Rds")               # Modification value matrix
 pData_col <- readRDS("pData.Rds")         # Sample (column) matrix
 annot_row <- readRDS("annotation.Rds")    # Position (row) matrix
 samples <- read.csv("samples2.csv")
-
-vec <- colnames(beta)
-samples.clean <-samples[samples$Basename %in% vec, ]
 vec <- colnames(beta)
 samples.clean <-samples[samples$Basename %in% vec, ]
 colnames(beta) <- samples$graph_name[match(colnames(beta), samples$Basename)]
@@ -59,8 +56,8 @@ buvo tiriamos moterų žarnų biopsijos, buvo gauta mėginius aprašanti lentel�
 kurią peržiūrėjus, buvo galima sudaryti grupes pagal kelis požymius:
 
 -   Žarnų polipų turinčių ir polipų neturinčių moterų grupės;
--   Moterų, kurioms yra nuo 50 iki 65 metų, grupė ir moterų, kurioms yra nuo 65
-    iki 80 metų, grupė;
+-   Moterų, kurioms yra nuo *50* iki *65* metų, grupė ir moterų, kurioms yra nuo
+    *65* iki *80* metų, grupė;
 -   Aspiriną ilgą laiką vartojančių ir nevartojančių moterų grupės.
 
 Pirmoje užduoties dalyje pasirinkta suskirstyti mėginius į grupes pagal aspirino
@@ -70,10 +67,10 @@ užduotyje analizuojamų mėginių kiekis buvo mažesnis (*96* mėginiai iš *12
 mėginių).
 
 Žemiau esančioje horizontalioje stulpelinėje diagramoje vaizduojama, kiek
-mėginių sudarė kievieną grupę (aspirino nevartojančių moterų grupė ir aspiriną
-vartojančių moterų grupė) prieš atliekant antrąją praktinę užduotį, kai buvo
-turimi *124* mėginiai, bei diagramos stulpeliai, kuriuose vaizduojami mėginių
-kiekiai grupėse po mėginių pašalinimo (likus *96* mėginiams):
+mėginių sudarė kievieną grupę (aspirino nevartojančių moterų ir aspiriną
+vartojančių moterų) prieš atliekant antrąją praktinę užduotį, kai buvo turimi
+*124* mėginiai, bei diagramos stulpeliai, kuriuose vaizduojami mėginių kiekiai
+grupėse po mėginių pašalinimo (likus *96* mėginiams):
 
 ```{r Aspirin_user/nonuser_selection, fig.align="center", fig.height=3, fig.width=4, message=FALSE, warning=FALSE, include=FALSE}
 # Extracting data frame rows that describe aspirin non-users:
@@ -121,14 +118,15 @@ print(p0)
 Suskirsčius mėginius į grupes buvo tikrinama, kaip skiriasi visų DNR pozicijų
 modifikacijos reikšmių vidurkiai tarp sudarytų aspirino nevartojančių ir
 aspiriną vartojančių moterų grupių. Šis palyginimas atliktas, pasinaudojus
-svarbiu, statistikoje taikomu ***t-testu***, kuris šiuo atveju tikrina, ar
-modifikacijos reikšmių vidurkiai skirtingose DNR pozicijose sutampa.
+svarbiu, statistikoje taikomu ***t-testu***, kuris tikrina, ar modifikacijos
+reikšmių vidurkiai skirtingose DNR pozicijose sutampa.
 
 Atlikus abiejų grupių modifikacijos reikšmių vidurkių pozicijose palyginimą,
 buvo grąžintos specialios reikšmės ***(p vertės)***, kurios leidžia padaryti
 išvadą, ar susietų grupių modifikacijos reikšmių vidurkiai skiriasi reikšmingai.
 Kitaip tariant, šio testo rezultatas padeda įvertinti, ar aspirino vartojimas ir
-nevartojimas įtakoja DNR modifikacijų reikšmes.
+nevartojimas įtakoja DNR modifikacijų reikšmes ir ar vidurkių skirtumas tarp
+grupių yra statistiškai reikšmingas.
 
 ```{r T_test_effect_size_calculations, message=FALSE, warning=FALSE, include=FALSE}
 # Creating an empty matrixes that will store p values and effect sizes
@@ -280,6 +278,7 @@ p2 <- ggplot(group_modifications, aes(x = User_nonuser, y = Modification_value,
               strip.background = element_rect(fill = "#2f4581"),
               strip.text = element_text(color = "white", face = "bold"),
               legend.position = "none")
+
 print(p2 + scale_color_brewer(palette = "Set1"))
 ```
 
@@ -350,22 +349,21 @@ pozicijų iškrita, apie kurią nėra jokios informacijos.
 
 ### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms atvaizduoti
 
-Žemiau vaizduojamas grafikas, kuriame vizualizuojamos visų chromosomų *p*
-vertės ir efekto dydžiai. Žemiau raudonos linijos pilka spalva
-yra atvaizduojamos visos *p* vertės, kurias logaritmavus, jos buvo mažesnės
-už *-log(0.05)* reikšmę. Visos šios reikšmės yra laikomos statistiškai
-nereikšmingomis.
+Žemiau vaizduojamas grafikas, kuriame vizualizuojamos visų chromosomų *p* vertės
+ir efekto dydžiai. Žemiau raudonos linijos pilka spalva yra atvaizduojamos visos
+*p* vertės, kurias logaritmavus, jos buvo mažesnės už *-log(0.05)* reikšmę.
+Visos šios reikšmės yra laikomos statistiškai nereikšmingomis.
 
-Tamsiai raudona spalva pavaizduoti taškai nėra laikomi statistiškai
-patikimais, nepaisant to, jog logaritmuotos *p* vertės yra didesnės už
-*-log(0.05)*. Taip yra todėl, nes šiuo atveju reikia atsižvelgti ir į
-efekto dydžio reikšmę. Reikšmės laikomos patikimomis tada, kai efekto dydžio
-reikšmė viršija 0.2 ir *p* reikšmė viršija *-log(0.05)* reikšmę.
+Tamsiai raudona spalva pavaizduoti taškai nėra laikomi statistiškai patikimais,
+nepaisant to, jog logaritmuotos *p* vertės yra didesnės už *-log(0.05)*. Taip
+yra todėl, nes šiuo atveju reikia atsižvelgti ir į efekto dydžio reikšmę.
+Reikšmės laikomos patikimomis tada, kai efekto dydžio reikšmė viršija *0.2* ir
+*p* reikšmė viršija *-log(0.05)* reikšmę.
 
 Grafike yra pavaizduoti oranžiniai taškai, kurie rodo statistiškai patikimas
-reikšmes. Tai reiškia, jog atsižvelgus į efekto dydžius ir logaritmuotas
-*p* vertes, oranžine spalva pažymėti taškai yra reikšmingi ir gali būti
-panaudoti tolimesnėms analizėms.
+reikšmes. Tai reiškia, jog atsižvelgus į efekto dydžius ir logaritmuotas *p*
+vertes, oranžine spalva pažymėti taškai yra reikšmingi ir gali būti panaudoti
+tolimesnėms analizėms.
 
 ```{r Chromosome_volcano_plot, fig.align="center", fig.height=3, fig.width=4, echo=FALSE, message=FALSE, warning=FALSE}
 # Forming a dataframe that will be used for making a Volcano plot:
@@ -422,11 +420,12 @@ jog tarp atliktų testų gali būti labai daug ***false positive*** reikšmių.
 
 ***False positive** - tai yra reikšmė, kuri laikoma reikšminga, kai iš tiesų ji
 tokia nėra (nėra reikšminga).*
+
 Kitaip tariant, *p* reikšmė nurodo, kokia yra tikimybė atmesti teisingą
-hipotezę.
-Šioje praktinės užduoties dalyje buvo atliktos *p* reikšmių korekcijos, kurios
-pritaikytos tam, jog bendra klaidos tikimybė, kartojant testą daug kartų, būtų
-mažesnė arba lygi dažniausiai naudojamai *p* reikšmei *(0.05).*
+hipotezę. Šioje praktinės užduoties dalyje buvo atliktos *p* reikšmių
+korekcijos, kurios pritaikytos tam, jog bendra klaidos tikimybė, kartojant testą
+daug kartų, būtų mažesnė arba lygi dažniausiai naudojamai *p* reikšmei *(0.05).*
+
 Žemiau pateiktoje lentelėje nurodomi reikšmingų pozicijų skaičiai, neatlikus *p*
 verčių korekcijos bei pritaikius ***FDR*** ir ***Bonferroni*** korekcijas:
 
@@ -463,7 +462,7 @@ reikšmingų pozicijų nustatoma, *p* vertėms atlikus ***FDR*** korekciją.
 
 \pagebreak
 
-## 3. Gene Ontology Enrichment analizė
+## 3. *Gene Ontology Enrichment* analizė
 
 Atlikus *p* verčių korekciją ir įvertinus, kurios DNR pozicijos turi
 statistiškai patikimus modifikacijos įverčių vidurkius, galima analizuoti
@@ -604,7 +603,7 @@ produktai aptinkami **sinapsėse** bei **plazminėse membranose**. Taip pat
 lentelėje nurodoma, kad atrinkti genai įeina į nervinių komponentų - **aksonų**
 ir **dendritų** - sandarą.
 
-Apibendrinus lentelėse pateiktus duomenimis bei pilnus ***GOrilla*** analizės
+Apibendrinus lentelėse pateiktus duomenis bei pilnus ***GOrilla*** analizės
 rezultatus, galima daryti išvadą, kad didelė dalis genų dalyvauja nervinės
 sistemos atliekamuose procesuose. Taip pat daug genų produktų - baltymų - įeina
 į nervinių ląstelių bei kitų struktūrų (dendritų, sinapsių, ląstelės membraninių
@@ -612,21 +611,21 @@ išsikišimų) sudėtį.
 
 # **4. Grupių analizė, kontroliuojant pašalinius efektus**
 
-Ketvirtoje užduoties dalyje statistinis hipotezių testavimas buvo atliktas, 
+Ketvirtoje užduoties dalyje statistinis hipotezių testavimas buvo atliktas,
 naudojant tiesinius modelius, kontroliuojant pašalinius efektus:
 
-- Nuliniame modelyje kaip pašaliniai efektai buvo pasirinkti aspirino vartojimas 
-ir polipų buvimas.
-- Pirmajame modelyje pašaliniais efektais buvo amžius, aspirino vartojimas ir
-polipų buvimas.
+-   **Nuliniame modelyje** kaip pašaliniai efektai buvo pasirinkti **aspirino
+    vartojimas** ir **polipų buvimas**.
+-   **Pirmajame modelyje** pašaliniais efektais buvo **amžius**, **aspirino
+    vartojimas** ir **polipų buvimas**.
 
-***(P vertės)*** buvo gautos iš antrojo tiesinio modelio amžiaus koeficiento. 
-***Efekto dydis*** buvo gautas, naudojant dispersinę analizę, analizuojant 
+***(P vertės)*** buvo gautos iš antrojo tiesinio modelio amžiaus koeficiento.
+***Efekto dydis*** buvo gautas, naudojant dispersinę analizę, analizuojant
 vidurkių skirtumą tarp nulinio ir pirmojo modelio.
 
 ```{r Anova_test, warning=FALSE, include=FALSE}
-#pvalues <- matrix(NA,nrow = nrow(beta), ncol=2)
-#effect_sizes <- matrix(NA,nrow=nrow(beta), ncol=2)
+#pvalues <- matrix(NA, nrow = nrow(beta), ncol = 2)
+#effect_sizes <- matrix(NA, nrow = nrow(beta), ncol = 2)
 
 # Using linear models to create two models to control "outsider" effects.
 # Using linear model "mod1" age coefficient to get effect_size and Anova table
@@ -638,7 +637,7 @@ for (row in 1:nrow(beta)) {
   
   rowname <- rownames(beta)[row]
   effect_sizes[row,] <- c(rowname, coefficients(mod1)[2])
-  pvalues[row,] <- c(rowname, res[2,6])
+  pvalues[row,] <- c(rowname, res[2, 6])
 }
 
 colnames(pvalues) <- c("Position", "P-value")
@@ -654,13 +653,15 @@ effect_sizes <- readRDS("lm_effect_sizes.rds")
 pvalues <- readRDS("lm_p_values.rds")
 ```
 
+### *P* verčių histograma
+
 Žemiau pateikiamoje histogramoje yra vaizduojamas gautų *p* verčių
-pasiskirstymas ieškant pozicijų susijusių su amžiumi ir kontroliuojant
-papildomus pašalinius efektus. Šiuo atveju buvo pasirinkti kontroliuojami
-pašaliniai efektai buvo aspirino vartojimas ir polipų buvimas.
+pasiskirstymas, ieškant pozicijų susijusių su amžiumi ir kontroliuojant
+papildomus pašalinius efektus. Šiuo atveju pasirinkti kontroliuojami pašaliniai
+efektai buvo aspirino vartojimas ir polipų buvimas.
 
 Kaip ir prieš tai buvusioje *p* verčių paskirstymo histogramoje buvo gautas
-ganėtinai didelis skaičius *p* verčių, kuriuos yra mažesnės už 0.05.
+ganėtinai didelis skaičius *p* verčių, kurios yra mažesnės už *0.05*.
 
 ```{r lm_P_value_histogram, echo=FALSE, fig.align="center", fig.height=3, fig.width=5, warning=FALSE}
 values <- as.numeric(pvalues[, 2])
@@ -703,18 +704,19 @@ profilio* analizėje.
 
 Grafikuose galima pastebėti, kad pirmosios pozicijos ***(cg04922606)*** aspirino
 nevartojančių moterų grupėje esama mažesnių modifikacijos įverčių. Taip pat
-galime pastebėti, kad moterų grupėje vartojančių aspiriną mažų iverčių yra
+galima pastebėti, kad vartojančių aspiriną moterų grupėje mažų įverčių yra
 mažiau.
 
-Antroje, ketvirtoje ir penktoje pozicijose matome, kad tiek aspiriną
-vartojančių, tiek nevartojančių modifikacijos įverčiai yra vienodi ir yra ties 0.
+Antroje, ketvirtoje ir penktoje pozicijose matoma, kad tiek aspiriną
+vartojančių, tiek nevartojančių modifikacijos įverčiai yra vienodi ir yra ties
+*0*.
 
 Trečioje pozicijoje ***(cg02934525)*** įverčiai yra gan panašūs tiek vartojančių
 aspiriną, tiek aspirino nevartojančių moterų grupėse.
 
 ```{r lm_Min_p_value_visualization, fig.align="center", fig.height=3, fig.width=5, echo=FALSE, warning=FALSE}
 # Ordering a p-value dataframe and extracting 5 rows with the lowest p-value:
-#min_Ps <- p_df[order(p_df$pvals),][1:5,]
+#min_Ps <- p_df[order(p_df$pvals), ][1:5, ]
 
 # Determining position names that have the lowest p-values:
 position_names <- p_df[order(p_df$pvals), ][1:5, ]$positions
@@ -866,13 +868,12 @@ p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
 plot(p4)
 ```
 
-## 4.2. Daugkartinio testavimo *p* verčių korekcija, kontroliuojant pašalinius
-## efektus.
+## 4.2. Daugkartinio testavimo *p* verčių korekcija, kontroliuojant pašalinius efektus
 
 Žemiau pateiktoje lentelėje nurodomi reikšmingų pozicijų skaičiai, neatlikus *p*
 verčių korekcijos bei pritaikius ***FDR*** ir ***Bonferroni*** korekcijas:
 
-```{r}
+```{r lm_P_value_corrections, echo=FALSE, message=FALSE, warning=FALSE}
 fdr <- p.adjust(pvalues$`P-value`, method = "fdr",
                 n = length(pvalues$`P-value`))
 bf <- p.adjust(pvalues$`P-value`, method = "bonferroni",
@@ -893,13 +894,13 @@ positions <- data.table(correction = c("No correction","FDR","Bonferroni"),
    map_italic(everywhere, "correction", by_regex("Merc.*" = TRUE)) %>%
    set_bold(1, everywhere, TRUE) %>%
    set_background_color(1:1, everywhere , "lightgreen") %>%
-  set_align(1,1, "center")
+   set_align(1,1, "center")
 
 align(positions) <- "center"
 print(positions)
 ```
 
-## 4.3. Gene Ontology Enrichment analizė
+## 4.3. *Gene Ontology Enrichment* analizė
 
 Atlikus *p* verčių korekciją ir įvertinus, kurios DNR pozicijos turi
 statistiškai patikimus modifikacijos įverčių vidurkius, galima analizuoti
@@ -930,7 +931,7 @@ write.table(fgene_list, file = "lm_foreground_gene_list.txt", quote = FALSE,
             col.names = FALSE, row.names = FALSE)
 ```
 
-```{r lm_GO_analysis_selected_genes_by_p, message=FALSE, warning=FALSE, include=FALSE}
+```{r lm_GO_analysis_all_genes, message=FALSE, warning=FALSE, include=FALSE}
 # Extracting 'UCSC_RefGene_Name' column values for the entire positions:
 bgenes <- c(unique(annot_row$UCSC_RefGene_Name)) %>%
                stri_remove_empty(., na_empty = FALSE)
@@ -942,135 +943,6 @@ bgene_list <- data.table(Genes = unique(unlist(blist)))
 write.table(bgene_list, file = "lm_background_gene_list.txt", quote = FALSE,
             col.names = FALSE, row.names = FALSE)
 ```
-
-print(p3)
-
-```
-
-### *Volcano* grafikas visų chromosomų efektų dydžiams ir *p* vertėms
-
-Žemiau pateiktame pateiktame *Volcano* grafike 
-```{r lm_Chromosome_volcano_plot, echo=FALSE, message=FALSE, warning=FALSE}
-df <- data.frame(P = as.numeric(p_effects$P),
-                 Effect_size = as.numeric(p_effects$Effect))
-df <- df %>%
-  mutate(significance = case_when(Effect_size > 0 & P <= 0.05 ~ "up",
-                                  Effect_size <= 0.5 & P <= 0.05 ~ "down",
-                                  TRUE ~ "ns"))   
- 
-cols <- c("up" = "#ffdc81", "down" = "#7e0a23", "ns" = "grey") 
-sizes <- c("up" = 0.2, "down" = 0.2, "ns" = 0.1) 
-alphas <- c("up" = 1, "down" = 1, "ns" = 0.5)
-
-p4 <- ggplot(df, aes(x = Effect_size, y = -log10(P), fill = significance,
-             alpha = significance)) + 
-        geom_point(shape = 21,color='transparent',  alpha = 0.8) + 
-        geom_hline(yintercept = -log10(0.05), linetype = "dashed", size = 0.7,
-                   color = "red") + 
-        geom_vline(xintercept = c(log2(0.5), log2(2)), linetype = "dashed") +
-        annotate("text", x = 0.4, y = 3, label = stringr::str_wrap("Line
-                 indicating where values lose significance", width = 20),
-                 size = 3, color = "red", fontface = 4) +
-        scale_fill_manual(values = cols) +
-        scale_size_manual(values = sizes) +
-        scale_alpha_manual(values = alphas) +
-        labs(title = "P and effect size values of all chromosomes",
-             x = "Effect size", y = "-log10(P)") +
-        scale_x_continuous(breaks = c(seq(-0.02, 0, 0.02)),
-                           limits = c(-0.02, 0.02)) +
-        theme(axis.text.x = element_text(vjust = 0.5, size = 8,
-                                         colour = "black"),
-              plot.title = element_text(hjust = 0.5, face = "bold"),
-              panel.background = element_rect(colour = "#05076a", size = 0.5,
-                                              fill = "#eaeafd",
-                                              linetype = "solid"),              
-              plot.subtitle = element_text(hjust = 0.5, face = "bold"),
-              panel.grid.major = element_line(size = 0.08, linetype = 'dashed',
-                                              colour = "#c18700"), 
-              panel.grid.minor = element_line(size = 0.08, linetype = 'dashed',
-                                              colour = "#c18700"))
-
-plot(p4)
-```
-
-
-## 4.2. Daugkartinio testavimo *p* verčių korekcija kontroliuojant pašalinius efektus.
-
-Žemiau pateiktoje lentelėje nurodomi reikšmingų pozicijų skaičiai, neatlikus *p*
-verčių korekcijos bei pritaikius ***FDR*** ir ***Bonferroni*** korekcijas:
-
-```{r lm_P_value_corrections, echo=FALSE, message=FALSE, warning=FALSE}
-fdr <- p.adjust(pvalues$`P-value`, method = "fdr", n = length(pvalues$`P-value`))
-bf <- p.adjust(pvalues$`P-value`, method = "bonferroni", n = length(pvalues$`P-value`))
-
-p_corr <- data.frame(Position = pvalues$Position, No_correction = pvalues$`P-value`,
-                     FDR = fdr, Bonferroni = bf)
-
-positions <- data.table(correction = c("No correction","FDR","Bonferroni"),
-   position_count = c(length(rownames(p_corr[p_corr$No_correction <= 0.05, ])),
-                   length(rownames(p_corr[p_corr$FDR <= 0.05, ])),
-                   length(rownames(p_corr[p_corr$Bonferroni <= 0.05, ])))) %>%
-   as_huxtable() %>%
-   set_bold(1, everywhere, TRUE) %>%
-   set_all_borders(1) %>%
-   map_text_color(everywhere, "position_count",
-                  by_colorspace("navy", "red", "darkgreen")) %>%
-   map_italic(everywhere, "correction", by_regex("Merc.*" = TRUE)) %>%
-   set_bold(1, everywhere, TRUE) %>%
-   set_background_color(1:1, everywhere , "lightgreen") %>%
-  set_align(1,1, "center")
-
-align(positions) <- "center"
-print(positions)
-```
-
-## 4.3. Gene Ontology Enrichment analizė kontroliuojant pašalinius efektus.
-
-Pasinaudojus ***GOrilla*** įrankiu buvo analizuojami genai esantys konkrečiose
-genominėse pozicijose.
-
-```{r lm_GO_analysis_selected_genes_by_p, message=FALSE, warning=FALSE, include=FALSE}
-# Extracting 'UCSC_RefGene_Name' column values of positions that have a p value
-# which is lower or equal to 0.05 after performing FDR correction:
-selected_pos <- p_corr[p_corr$FDR <= 0.05, 1] %>% 
-                  annot_row[.,]
-fgenes <- c(unique(selected_pos$UCSC_RefGene_Name)) %>%
-               stri_remove_empty(., na_empty = FALSE)
-
-# Handling lines with gene name repetitions:
-modify_lines <- function(x) {
-      if (grepl(";", x) == TRUE) {
-        strsplit(x, ";")
-      } else { x }
-}
-
-# Making a unique "foreground" gene name list:
-flist <- lapply(fgenes, modify_lines)
-fgene_list <- data.table(Genes = unique(unlist(flist)))
-
-write.table(fgene_list, file = "lm_foreground_gene_list.txt", quote = FALSE,
-            col.names = FALSE, row.names = FALSE)
-```
-
-```{r lm_GO_analysis_all_genes, warning=FALSE, include=FALSE}
-# Extracting 'UCSC_RefGene_Name' column values for the entire positions:
-bgenes <- c(unique(annot_row$UCSC_RefGene_Name)) %>%
-               stri_remove_empty(., na_empty = FALSE)
-
-# Making a unique "background" gene name list:
-blist <- lapply(bgenes, modify_lines)
-bgene_list <- data.table(Genes = unique(unlist(blist)))
-
-write.table(bgene_list, file = "lm_background_gene_list.txt", quote = FALSE,
-            col.names = FALSE, row.names = FALSE)
-```
-
-Kaip ir prieš tai atlikus *Gene Ontology Enrichment* analizę su ***GOrilla*** 
-įrankiu, genai buvo nagrinėjami pagal tris kategorijas:
-
-1.  Kokiuose procesuose dalyvauja;\
-2.  Kokias funkcijas atlieka;\
-3.  Kokiuose biologiniuose komponentuose (ląstelėse ir pan.) aptinkami.
 
 #### Procesai
 
@@ -1092,12 +964,12 @@ print(GO_proc)
 ```
 
 Lentelėje pateikti duomenys rodo, kad atrinktuose genuose kaip ir prieš tai
-atliktoje procesų analizėje didžioji dalis genų dalyvauja **anatomijos** ir 
+atliktoje procesų analizėje didžioji dalis genų dalyvauja **anatomijos** ir
 **organų formavimosi** procesuose.
 
 #### Funkcijos
 
-Žemiau pateikiamoje lentelėje nurodomi 10 funkcijų, kurias atlieka pasirinkti 
+Žemiau pateikiamoje lentelėje nurodomos 10 funkcijų, kurias atlieka pasirinkti
 genai :
 
 ```{r lm_GO_analysis_Function, echo=FALSE, message=FALSE, warning=FALSE}
@@ -1114,10 +986,10 @@ align(GO_func) <- "center"
 print(GO_func)
 ```
 
-Remiantis lentelėje pateikta informacija apie funkcijas, kurias atlieka genai.
-Galime pamatyti kad didžioji dalis genų atlieka prisijungimo funkciją. Taip pat
-matome, kad labai stipriai išsiskyria genai, kurie atlieka baltymų prisijungimo
-funkcija.
+Remiantis lentelėje pateikta informacija apie funkcijas, kurias atlieka genai,
+galime pamatyti, kad didžioji dalis genų atlieka **prisijungimo** funkciją. Taip
+pat matoma, kad labai stipriai išsiskiria genai, kurie atlieka **baltymų
+prisijungimo funkciją**.
 
 #### Biologiniai komponentai
 
@@ -1137,9 +1009,12 @@ GO_comp <- GO_comp[order(GO_comp[, "P_value"]), , drop = FALSE] %>%
 align(GO_comp) <- "center"
 print(GO_comp)
 ```
-Iš lentelėje matomų biologinių komponentų galime pamatyti, kad didžioji dalis 
-genų yra iš lastelės sandaros dalių, tokių kaip membrana, nucleoplazmą.
 
-Apibendrinant lentesė pateiktus duomenis kontroliuojant pašalinius efektus, 
-galima padaryti išvadą, kad didžioji dalis genų dalyvauja **anatomijos**,
-**organų** ir **lastelės sandaros dalių** formavime.
+Iš lentelėje išvardintų biologinių komponentų matoma, kad didžioji dalis genų
+produktų įeina į ląstelės sandaros dalių, tokių kaip **membrana**,
+**nucleoplazma**, sudėtį.
+
+Apibendrinant lentelėse pateiktus duomenis, kurie buvo gauti nagrinėjant
+pozicijas, kontroliuojant pašalinius efektus, galima padaryti išvadą, kad
+didžioji dalis genų dalyvauja **anatomijos**, **organų** ir **ląstelės sandaros
+dalių** formavime.
